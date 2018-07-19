@@ -1,6 +1,6 @@
-# Virtual Device Testing for Android
+# Virtual Device Testing for iOS
 
-Run Android UI tests on virtual devices.
+Run iOS UI tests on virtual devices.
 
 
 ## How to use this Step
