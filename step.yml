@@ -1,0 +1,186 @@
+title: "[BETA] Virtual Device Testing for iOS"
+summary: Run iOS XCUItests on virtual devices
+description: |-
+  Run iOS XCUItests on virtual devices.
+  The minimal setup of this step would be to select test type.
+
+website: https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios
+source_code_url: https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios
+support_url: https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/issues
+project_type_tags:
+  - ios
+type_tags:
+  - test
+is_always_run: false
+is_skippable: false
+deps:
+  brew:
+  - name: go
+  apt_get:
+  - name: golang
+    bin_name: go
+toolkit:
+  go:
+    package_name: github.com/bitrise-steplib/steps-virtual-device-testing-for-ios
+
+inputs:
+  - zip_path:
+    opts:
+      title: "Zip path"
+      summary: |
+        The path to the zip file which contains the folder Debug-iphoneos and PROJECT_NAME_iphoneosDEVELOPMENT_TARGET-arm64.xctestrun.
+      description: |
+        Open finder, and navigate to the directory you designated for Derived Data output.
+        Open the folder for your project, then the Build/Products folders inside it.
+        You should see a folder Debug-iphoneos and PROJECT_NAME_iphoneosDEVELOPMENT_TARGET-arm64.xctestrun. Select them both, then right-click on one of them and select Compress 2 items.
+      is_required: true
+  - test_devices: "iphone7,11.2,en,portrait"
+    opts:
+      title: "Test devices"
+      description: |
+        Format:
+        One device configuration per line and the parameters are separated with `,` in the order of: `deviceID,version,language,orientation`
+        
+        For example:
+
+        `iphone7,11.2,en,portrait`
+        
+        `iphone7,11.2,en,landscape`
+        
+        Available devices and its versions:
+        ```
+        ┌───────────────┬────────────────────────┬────────────────┬
+        │   MODEL_ID    │       MODEL_NAME       │ OS_VERSION_IDS │
+        ├───────────────┼────────────────────────┼────────────────┼
+        │  ipad5        │  iPad (5th generation) │      11.2      │
+        │  ipadmini4    │  iPad mini 4           │      11.2      │
+        │  ipadpro_105  │  iPad Pro (10.5-inch)  │      11.2      │
+        │  iphone6s     │  iPhone 6s             │    10.3,11.2   │
+        │  iphone6splus │  iPhone 6s Plus        │    9.0,9.1     │
+        │  iphone7      │  iPhone 7              │      11.2      │
+        │  iphone7plus  │  iPhone 7 Plus         │      11.2      │
+        │  iphone8      │  iPhone 8              │      11.2      │
+        │  iphone8plus  │  iPhone 8 Plus         │      11.2      │
+        │  iphonese     │  iPhone SE             │      11.2      │
+        │  iphonex      │  iPhone X              │      11.2      │
+        └───────────────┴────────────────────────┴────────────────┴
+        ```
+      summary: |
+        Format:
+        One device configuration per line and the parameters are separated with `,` in the order of: `deviceID,version,language,orientation`
+        
+        For example:
+
+        `iphone7,11.2,en,portrait`
+        
+        `iphone7,11.2,en,landscape`
+        
+        Available devices and its versions:
+        ```
+        ┌───────────────┬────────────────────────┬────────────────┬
+        │   MODEL_ID    │       MODEL_NAME       │ OS_VERSION_IDS │
+        ├───────────────┼────────────────────────┼────────────────┼
+        │  ipad5        │  iPad (5th generation) │      11.2      │
+        │  ipadmini4    │  iPad mini 4           │      11.2      │
+        │  ipadpro_105  │  iPad Pro (10.5-inch)  │      11.2      │
+        │  iphone6s     │  iPhone 6s             │    10.3,11.2   │
+        │  iphone6splus │  iPhone 6s Plus        │    9.0,9.1     │
+        │  iphone7      │  iPhone 7              │      11.2      │
+        │  iphone7plus  │  iPhone 7 Plus         │      11.2      │
+        │  iphone8      │  iPhone 8              │      11.2      │
+        │  iphone8plus  │  iPhone 8 Plus         │      11.2      │
+        │  iphonese     │  iPhone SE             │      11.2      │
+        │  iphonex      │  iPhone X              │      11.2      │
+        └───────────────┴────────────────────────┴────────────────┴
+        ```
+      is_required: true
+  - test_timeout: 900
+    opts:
+      category: "Debug"
+      title: "Test timeout"
+      summary: |
+        The max time this test execution can run before it is cancelled. It does not include any time necessary to prepare and clean up the target device. The maximum possible testing time is 3600 seconds.
+      description: |
+        The max time this test execution can run before it is cancelled. It does not include any time necessary to prepare and clean up the target device. The maximum possible testing time is 3600 seconds.
+  - directories_to_pull:
+    opts:
+      category: "Debug"
+      title: "Directories to pull"
+      summary: |
+        A list of paths that will be downloaded from the device's storage after the test is complete. 
+        
+        For example
+        
+        ```
+        /sdcard/tempDir1
+        /data/tempDir2
+        ```
+        
+        If `download_test_results` input is set to `false` then these files will be downloaded to the dashboard only. To have them downloaded set that input to `true` as well.
+      description: |
+        A list of paths that will be downloaded from the device's storage after the test is complete. 
+        
+        For example
+        
+        ```
+        /sdcard/tempDir1
+        /data/tempDir2
+        ```
+        
+        If `download_test_results` input is set to `false` then these files will be available on the dashboard only. To have them downloaded set that input to `true` as well.
+  - environment_variables:
+    opts:
+      category: "Debug"
+      title: Environment Variables
+      summary: |
+        One variable per line, key and value seperated by `=`
+
+        For example:
+
+        ```
+        coverage=true
+        coverageFile=/sdcard/tempDir/coverage.ec
+        ```
+      description: |
+        One variable per line, key and value seperated by `=`
+
+        For example:
+
+        ```
+        coverage=true
+        coverageFile=/sdcard/tempDir/coverage.ec
+        ```
+  - download_test_results: "false"
+    opts:
+      category: "Debug"
+      title: "Download files"
+      summary: |
+        If this input is set to `true` all files generated in the test run and the files you downloaded from the device (if you have set `directories_to_pull` input as well) will be downloaded. Otherwise, no any file will be downloaded. 
+      description: |
+        If this input is set to `true` all files generated in the test run and the files you downloaded from the device (if you have set `directories_to_pull` input as well) will be downloaded. Otherwise, no any file will be downloaded.
+      is_required: true
+      value_options:
+        - "false"
+        - "true"
+  - api_base_url: $ADDON_VDTESTING_API_URL
+    opts:
+      title: "Test API's base URL"
+      summary: The URL where test API is accessible.
+      description: |
+        The URL where test API is accessible.
+      is_required: true
+      is_dont_change_value: true
+  - api_token: $ADDON_VDTESTING_API_TOKEN
+    opts: 
+      title: "API Token"
+      summary: The token required to authenticate with the API.
+      description: |
+        The token required to authenticate with the API.
+      is_required: true
+      is_dont_change_value: true
+outputs:
+  - VDTESTING_DOWNLOADED_FILES_DIR:
+    opts:
+      title: "Downloaded files directory"
+      description: "The directory containing the downloaded files if you have set `directories_to_pull` and `download_test_results` inputs above."
+      summary: "The directory containing the downloaded files if you have set `directories_to_pull` and `download_test_results` inputs above."
