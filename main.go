@@ -205,12 +205,12 @@ func main() {
 			newDevice := testing.IosDevice{
 				IosModelId:   deviceParams[0],
 				IosVersionId: deviceParams[1],
-				Locale:       deviceParams[2],
-				Orientation:  deviceParams[3],
 			}
 
 			testModel.EnvironmentMatrix.IosDeviceList.IosDevices = append(testModel.EnvironmentMatrix.IosDeviceList.IosDevices, &newDevice)
 		}
+
+		log.Warnf("Devides done;")
 
 		// parse directories to pull
 		scanner = bufio.NewScanner(strings.NewReader(configs.DirectoriesToPull))
