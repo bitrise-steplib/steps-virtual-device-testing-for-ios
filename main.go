@@ -15,14 +15,15 @@ import (
 	"text/tabwriter"
 	"time"
 
+	testing "google.golang.org/api/testing/v1"
+	toolresults "google.golang.org/api/toolresults/v1beta3"
+
 	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-io/go-utils/sliceutil"
 	"github.com/bitrise-tools/go-steputils/input"
 	"github.com/bitrise-tools/go-steputils/tools"
-	testing "google.golang.org/api/testing/v1"
-	toolresults "google.golang.org/api/toolresults/v1beta3"
 )
 
 // ConfigsModel ...
@@ -34,16 +35,12 @@ type ConfigsModel struct {
 	APIToken   string
 
 	// shared
+	ZipPath              string
 	TestDevices          string
 	TestTimeout          string
 	DownloadTestResults  string
 	DirectoriesToPull    string
 	EnvironmentVariables string
-	ZipPath              string
-
-	// loop
-	LoopScenarios      string
-	LoopScenarioLabels string
 }
 
 // UploadURLRequest ...
@@ -60,23 +57,28 @@ func createConfigsModelFromEnvs() ConfigsModel {
 		AppSlug:    os.Getenv("BITRISE_APP_SLUG"),
 		APIToken:   os.Getenv("api_token"),
 
-		ZipPath: os.Getenv("zip_path"),
-
-		// loop
-		LoopScenarios:      os.Getenv("loop_scenarios"),
-		LoopScenarioLabels: os.Getenv("loop_scenario_labels"),
+		// shared
+		ZipPath:              os.Getenv("zip_path"),
+		TestDevices:          os.Getenv("test_devices"),
+		TestTimeout:          os.Getenv("test_timeout"),
+		DownloadTestResults:  os.Getenv("download_test_results"),
+		DirectoriesToPull:    os.Getenv("directories_to_pull"),
+		EnvironmentVariables: os.Getenv("environment_variables"),
 	}
 }
 
 func (configs ConfigsModel) print() {
 	log.Infof("Configs:")
+	log.Printf("- ZipPath: %s", configs.ZipPath)
 
 	log.Printf("- TestTimeout: %s", configs.TestTimeout)
 	log.Printf("- DirectoriesToPull: %s", configs.DirectoriesToPull)
 	log.Printf("- EnvironmentVariables: %s", configs.EnvironmentVariables)
 	log.Printf("- TestDevices:\n---")
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-	fmt.Print(w, "Model\tAPI Level\tLocale\tOrientation\t")
+	if _, err := fmt.Fprintln(w, "Model\tAPI Level\tLocale\tOrientation\t"); err != nil {
+		failf("Failed to write in writer")
+	}
 	scanner := bufio.NewScanner(strings.NewReader(configs.TestDevices))
 	for scanner.Scan() {
 		device := scanner.Text()
@@ -91,11 +93,14 @@ func (configs ConfigsModel) print() {
 			continue
 		}
 
-		fmt.Print(w, fmt.Sprintf("%s\t%s\t%s\t%s\t", deviceParams[0], deviceParams[1], deviceParams[3], deviceParams[2]))
+		if _, err := fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t", deviceParams[0], deviceParams[1], deviceParams[3], deviceParams[2])); err != nil {
+			failf("Failed to write in writer")
+		}
 	}
 	if err := w.Flush(); err != nil {
 		log.Errorf("Failed to flush writer, error: %s", err)
 	}
+	log.Printf("---")
 }
 
 func (configs ConfigsModel) validate() error {
@@ -113,6 +118,12 @@ func (configs ConfigsModel) validate() error {
 	}
 	if err := input.ValidateIfNotEmpty(configs.AppSlug); err != nil {
 		return fmt.Errorf("Issue with AppSlug: %s", err)
+	}
+	if err := input.ValidateIfNotEmpty(configs.ZipPath); err != nil {
+		return fmt.Errorf("Issue with ApkPath: %s", err)
+	}
+	if err := input.ValidateIfPathExists(configs.ZipPath); err != nil {
+		return fmt.Errorf("Issue with ApkPath: %s", err)
 	}
 
 	return nil
@@ -137,7 +148,7 @@ func main() {
 
 	successful := true
 
-	log.Infof("Upload XCTestrun")
+	log.Infof("Upload APKs")
 	{
 		url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
 
@@ -177,7 +188,7 @@ func main() {
 			failf("Failed to upload file(%s) to (%s), error: %s", configs.ZipPath, responseModel.AppURL, err)
 		}
 
-		log.Donef("=> XCTestrun uploaded")
+		log.Donef("=> .xctestrun uploaded")
 	}
 
 	fmt.Println()
@@ -205,12 +216,12 @@ func main() {
 			newDevice := testing.IosDevice{
 				IosModelId:   deviceParams[0],
 				IosVersionId: deviceParams[1],
+				Locale:       deviceParams[2],
+				Orientation:  deviceParams[3],
 			}
 
 			testModel.EnvironmentMatrix.IosDeviceList.IosDevices = append(testModel.EnvironmentMatrix.IosDeviceList.IosDevices, &newDevice)
 		}
-
-		log.Warnf("Devides done;")
 
 		// parse directories to pull
 		scanner = bufio.NewScanner(strings.NewReader(configs.DirectoriesToPull))
@@ -247,11 +258,9 @@ func main() {
 
 		testModel.TestSpecification = &testing.TestSpecification{
 			TestTimeout: fmt.Sprintf("%ss", configs.TestTimeout),
-			TestSetup: &testing.TestSetup{
-				EnvironmentVariables: envs,
-				DirectoriesToPull:    directoriesToPull,
-			},
 		}
+
+		testModel.TestSpecification.IosXcTest = &testing.IosXcTest{}
 
 		jsonByte, err := json.Marshal(testModel)
 		if err != nil {
@@ -346,7 +355,9 @@ func main() {
 
 				log.Infof("Test results:")
 				w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-				fmt.Print(w, "Model\tAPI Level\tLocale\tOrientation\tOutcome\t")
+				if _, err := fmt.Fprintln(w, "Model\tAPI Level\tLocale\tOrientation\tOutcome\t"); err != nil {
+					failf("Failed to write in writer")
+				}
 
 				for _, step := range responseModel.Steps {
 					dimensions := map[string]string{}
@@ -406,7 +417,9 @@ func main() {
 						outcome = colorstring.Blue(outcome)
 					}
 
-					fmt.Print(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t", dimensions["Model"], dimensions["Version"], dimensions["Locale"], dimensions["Orientation"], outcome))
+					if _, err := fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t", dimensions["Model"], dimensions["Version"], dimensions["Locale"], dimensions["Orientation"], outcome)); err != nil {
+						failf("Failed to write in writer")
+					}
 				}
 				if err := w.Flush(); err != nil {
 					log.Errorf("Failed to flush writer, error: %s", err)

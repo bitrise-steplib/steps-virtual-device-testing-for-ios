@@ -102,54 +102,6 @@ inputs:
         The max time this test execution can run before it is cancelled. It does not include any time necessary to prepare and clean up the target device. The maximum possible testing time is 3600 seconds.
       description: |
         The max time this test execution can run before it is cancelled. It does not include any time necessary to prepare and clean up the target device. The maximum possible testing time is 3600 seconds.
-  - directories_to_pull:
-    opts:
-      category: "Debug"
-      title: "Directories to pull"
-      summary: |
-        A list of paths that will be downloaded from the device's storage after the test is complete. 
-        
-        For example
-        
-        ```
-        /sdcard/tempDir1
-        /data/tempDir2
-        ```
-        
-        If `download_test_results` input is set to `false` then these files will be downloaded to the dashboard only. To have them downloaded set that input to `true` as well.
-      description: |
-        A list of paths that will be downloaded from the device's storage after the test is complete. 
-        
-        For example
-        
-        ```
-        /sdcard/tempDir1
-        /data/tempDir2
-        ```
-        
-        If `download_test_results` input is set to `false` then these files will be available on the dashboard only. To have them downloaded set that input to `true` as well.
-  - environment_variables:
-    opts:
-      category: "Debug"
-      title: Environment Variables
-      summary: |
-        One variable per line, key and value seperated by `=`
-
-        For example:
-
-        ```
-        coverage=true
-        coverageFile=/sdcard/tempDir/coverage.ec
-        ```
-      description: |
-        One variable per line, key and value seperated by `=`
-
-        For example:
-
-        ```
-        coverage=true
-        coverageFile=/sdcard/tempDir/coverage.ec
-        ```
   - download_test_results: "false"
     opts:
       category: "Debug"
@@ -162,7 +114,7 @@ inputs:
       value_options:
         - "false"
         - "true"
-  - api_base_url: $ADDON_VDTESTING_API_URL
+  - api_base_url: "https://vdt.bitrise.io/test"
     opts:
       title: "Test API's base URL"
       summary: The URL where test API is accessible.
