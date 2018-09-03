@@ -28,11 +28,11 @@ inputs:
     opts:
       title: "Zip path"
       summary: |
-        The path to the zip file which contains the folder Debug-iphoneos and PROJECT_NAME_iphoneosDEVELOPMENT_TARGET-arm64.xctestrun.
+        The path to the zip file which contains the folder Debug-iphoneos and PROJECT_NAME_iphoneos_DEVELOPMENT_TARGET-arm64.xctestrun.
       description: |
         Open finder, and navigate to the directory you designated for Derived Data output.
         Open the folder for your project, then the Build/Products folders inside it.
-        You should see a folder Debug-iphoneos and PROJECT_NAME_iphoneosDEVELOPMENT_TARGET-arm64.xctestrun. Select them both, then right-click on one of them and select Compress 2 items.
+        You should see a folder Debug-iphoneos and PROJECT_NAME_iphoneos_DEVELOPMENT_TARGET-arm64.xctestrun. Select them both, then right-click on one of them and select Compress 2 items.
       is_required: true
   - test_devices: "iphone7,11.2,en,portrait"
     opts:
@@ -107,9 +107,9 @@ inputs:
       category: "Debug"
       title: "Download files"
       summary: |
-        If this input is set to `true` all files generated in the test run and the files you downloaded from the device (if you have set `directories_to_pull` input as well) will be downloaded. Otherwise, no any file will be downloaded. 
+        If this input is set to `true` all files generated in the test run will be downloaded. Otherwise, no any file will be downloaded. 
       description: |
-        If this input is set to `true` all files generated in the test run and the files you downloaded from the device (if you have set `directories_to_pull` input as well) will be downloaded. Otherwise, no any file will be downloaded.
+        If this input is set to `true` all files generated in the test run will be downloaded. Otherwise, no any file will be downloaded.
       is_required: true
       value_options:
         - "false"
@@ -130,9 +130,10 @@ inputs:
         The token required to authenticate with the API.
       is_required: true
       is_dont_change_value: true
+      is_sensitive: true
 outputs:
   - VDTESTING_DOWNLOADED_FILES_DIR:
     opts:
       title: "Downloaded files directory"
-      description: "The directory containing the downloaded files if you have set `directories_to_pull` and `download_test_results` inputs above."
-      summary: "The directory containing the downloaded files if you have set `directories_to_pull` and `download_test_results` inputs above."
+      description: "The directory containing the downloaded files if you have set `download_test_results` inputs above."
+      summary: "The directory containing the downloaded files if you have set `download_test_results` inputs above."

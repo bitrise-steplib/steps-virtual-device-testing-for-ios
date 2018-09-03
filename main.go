@@ -35,12 +35,10 @@ type ConfigsModel struct {
 	APIToken   string
 
 	// shared
-	ZipPath              string
-	TestDevices          string
-	TestTimeout          string
-	DownloadTestResults  string
-	DirectoriesToPull    string
-	EnvironmentVariables string
+	ZipPath             string
+	TestDevices         string
+	TestTimeout         string
+	DownloadTestResults string
 }
 
 // UploadURLRequest ...
@@ -58,12 +56,10 @@ func createConfigsModelFromEnvs() ConfigsModel {
 		APIToken:   os.Getenv("api_token"),
 
 		// shared
-		ZipPath:              os.Getenv("zip_path"),
-		TestDevices:          os.Getenv("test_devices"),
-		TestTimeout:          os.Getenv("test_timeout"),
-		DownloadTestResults:  os.Getenv("download_test_results"),
-		DirectoriesToPull:    os.Getenv("directories_to_pull"),
-		EnvironmentVariables: os.Getenv("environment_variables"),
+		ZipPath:             os.Getenv("zip_path"),
+		TestDevices:         os.Getenv("test_devices"),
+		TestTimeout:         os.Getenv("test_timeout"),
+		DownloadTestResults: os.Getenv("download_test_results"),
 	}
 }
 
@@ -72,11 +68,9 @@ func (configs ConfigsModel) print() {
 	log.Printf("- ZipPath: %s", configs.ZipPath)
 
 	log.Printf("- TestTimeout: %s", configs.TestTimeout)
-	log.Printf("- DirectoriesToPull: %s", configs.DirectoriesToPull)
-	log.Printf("- EnvironmentVariables: %s", configs.EnvironmentVariables)
 	log.Printf("- TestDevices:\n---")
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-	if _, err := fmt.Fprintln(w, "Model\tAPI Level\tLocale\tOrientation\t"); err != nil {
+	if _, err := fmt.Fprintln(w, "Model\tOS version\tLocale\tOrientation\t"); err != nil {
 		failf("Failed to write in writer")
 	}
 	scanner := bufio.NewScanner(strings.NewReader(configs.TestDevices))
@@ -120,10 +114,10 @@ func (configs ConfigsModel) validate() error {
 		return fmt.Errorf("Issue with AppSlug: %s", err)
 	}
 	if err := input.ValidateIfNotEmpty(configs.ZipPath); err != nil {
-		return fmt.Errorf("Issue with ApkPath: %s", err)
+		return fmt.Errorf("Issue with ZipPath: %s", err)
 	}
 	if err := input.ValidateIfPathExists(configs.ZipPath); err != nil {
-		return fmt.Errorf("Issue with ApkPath: %s", err)
+		return fmt.Errorf("Issue with ZipPath: %s", err)
 	}
 
 	return nil
@@ -148,7 +142,7 @@ func main() {
 
 	successful := true
 
-	log.Infof("Upload APKs")
+	log.Infof("Upload IPAs")
 	{
 		url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
 
@@ -178,13 +172,11 @@ func main() {
 
 		responseModel := &UploadURLRequest{}
 
-		err = json.Unmarshal(body, responseModel)
-		if err != nil {
+		if err := json.Unmarshal(body, responseModel); err != nil {
 			failf("Failed to unmarshal response body, error: %s", err)
 		}
 
-		err = uploadFile(responseModel.AppURL, configs.ZipPath)
-		if err != nil {
+		if err := uploadFile(responseModel.AppURL, configs.ZipPath); err != nil {
 			failf("Failed to upload file(%s) to (%s), error: %s", configs.ZipPath, responseModel.AppURL, err)
 		}
 
@@ -221,39 +213,6 @@ func main() {
 			}
 
 			testModel.EnvironmentMatrix.IosDeviceList.IosDevices = append(testModel.EnvironmentMatrix.IosDeviceList.IosDevices, &newDevice)
-		}
-
-		// parse directories to pull
-		scanner = bufio.NewScanner(strings.NewReader(configs.DirectoriesToPull))
-		directoriesToPull := []string{}
-		for scanner.Scan() {
-			path := scanner.Text()
-			path = strings.TrimSpace(path)
-			if path == "" {
-				continue
-			}
-			directoriesToPull = append(directoriesToPull, path)
-		}
-
-		// parse environment variables
-		scanner = bufio.NewScanner(strings.NewReader(configs.EnvironmentVariables))
-		envs := []*testing.EnvironmentVariable{}
-		for scanner.Scan() {
-			envStr := scanner.Text()
-
-			if envStr == "" {
-				continue
-			}
-
-			if !strings.Contains(envStr, "=") {
-				continue
-			}
-
-			envStrSplit := strings.Split(envStr, "=")
-			envKey := envStrSplit[0]
-			envValue := strings.Join(envStrSplit[1:], "=")
-
-			envs = append(envs, &testing.EnvironmentVariable{Key: envKey, Value: envValue})
 		}
 
 		testModel.TestSpecification = &testing.TestSpecification{
@@ -322,8 +281,7 @@ func main() {
 
 			responseModel := &toolresults.ListStepsResponse{}
 
-			err = json.Unmarshal(body, responseModel)
-			if err != nil {
+			if err := json.Unmarshal(body, responseModel); err != nil {
 				failf("Failed to unmarshal response body, error: %s, body: %s", err, string(body))
 			}
 
@@ -355,7 +313,7 @@ func main() {
 
 				log.Infof("Test results:")
 				w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-				if _, err := fmt.Fprintln(w, "Model\tAPI Level\tLocale\tOrientation\tOutcome\t"); err != nil {
+				if _, err := fmt.Fprintln(w, "Model\tOS version\tLocale\tOrientation\tOutcome\t"); err != nil {
 					failf("Failed to write in writer")
 				}
 
@@ -459,8 +417,7 @@ func main() {
 
 			responseModel := map[string]string{}
 
-			err = json.Unmarshal(body, &responseModel)
-			if err != nil {
+			if err := json.Unmarshal(body, &responseModel); err != nil {
 				failf("Failed to unmarshal response body, error: %s", err)
 			}
 
@@ -470,8 +427,7 @@ func main() {
 			}
 
 			for fileName, fileURL := range responseModel {
-				err := downloadFile(fileURL, filepath.Join(tempDir, fileName))
-				if err != nil {
+				if err := downloadFile(fileURL, filepath.Join(tempDir, fileName)); err != nil {
 					failf("Failed to download file, error: %s", err)
 				}
 			}
@@ -515,8 +471,7 @@ func downloadFile(url string, localPath string) error {
 		return fmt.Errorf("Failed to download archive - non success response code: %d", resp.StatusCode)
 	}
 
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
+	if _, err := io.Copy(out, resp.Body); err != nil {
 		return fmt.Errorf("Failed to save cache content into file: %s", err)
 	}
 
