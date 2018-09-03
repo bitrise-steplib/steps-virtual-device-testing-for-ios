@@ -1,0 +1,53 @@
+format_version: 5
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+workflows:
+  test:
+    before_run:
+    - go-tests
+    - audit-this-step
+    steps:
+    - file-downloader@0.9.1:
+        inputs:
+        - source: "$BITRISEIO_TEST_XCTESTRUN_SAMPLE_URL"
+        - destination: "/tmp/ios_UI_test_sample.zip"
+    - path::./:
+        inputs:
+        - zip_path: "/tmp/ios_UI_test_sample.zip"
+
+  go-tests:
+    steps:
+    - go-list:
+    - golint:
+    - errcheck:
+    - go-test:
+
+  # ----------------------------------------------------------------
+  # --- Utility workflows
+  dep-update:
+    title: Godeps update
+    description: |
+      Used for updating bitrise dependencies with godep
+    steps:
+    - script:
+        title: Dependency update
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            go get -u -v github.com/bitrise-tools/gows
+            go get -u -v github.com/golang/dep/cmd/dep
+            gows clear
+            gows dep ensure -v
+            gows dep ensure -v -update
+
+  # ----------------------------------------------------------------
+  # --- workflows to Share this step into a Step Library
+  audit-this-step:
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            stepman audit --step-yml ./step.yml
