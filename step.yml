@@ -1,5 +1,5 @@
-title: "[BETA] Virtual Device Testing for iOS"
-summary: Run iOS XCUItests on virtual devices
+title: "[BETA] iOS Device Testing"
+summary: Run iOS XCUItests on devices
 description: |-
   Run iOS XCUItests on virtual devices.
   The minimal setup of this step would be to select test type.
