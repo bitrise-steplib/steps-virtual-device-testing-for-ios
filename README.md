@@ -1,4 +1,4 @@
-# Virtual Device Testing for iOS
+# iOS Device Testing
 
 Run iOS UI tests on virtual devices.
 
