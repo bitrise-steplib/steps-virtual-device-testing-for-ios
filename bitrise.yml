@@ -1,19 +1,56 @@
 format_version: 5
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
+app:
+  envs:
+  - SAMPLE_APP_URL: https://github.com/bitrise-samples/sample-apps-ios-simple-objc-with-uitest.git
+
 workflows:
   test:
     before_run:
-    - go-tests
     - audit-this-step
+    - go-tests
     steps:
-    - file-downloader@0.9.1:
+    - script:
         inputs:
-        - source: "$BITRISEIO_TEST_XCTESTRUN_SAMPLE_URL"
-        - destination: "/tmp/ios_UI_test_sample.zip"
+        - content: |-
+            #!/bin/bash
+            set -ex
+            rm -rf "$BITRISE_SOURCE_DIR/_tmp"
+            mkdir -p "$BITRISE_SOURCE_DIR/_tmp"
+    - change-workdir:
+        title: Switch working dir to _tmp dir
+        run_if: true
+        inputs:
+        - path: "$BITRISE_SOURCE_DIR/_tmp"
+        - is_create_path: true
+    - script:
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ev
+            git clone "$SAMPLE_APP_URL" .
+    - certificate-and-profile-installer:
+    - xcode-build-for-test:
+        inputs:
+        - project_path: ./ios-simple-objc/ios-simple-objc.xcodeproj
+        - scheme: ios-simple-objc
+        - output_tool: xcodebuild
     - path::./:
         inputs:
-        - zip_path: "/tmp/ios_UI_test_sample.zip"
+        - download_test_results: "true"
+    - script:
+        title: Output check
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -e
+            if [[ -z "$VDTESTING_DOWNLOADED_FILES_DIR" ]] ; then
+              echo "VDTESTING_DOWNLOADED_FILES_DIR should not be empty"
+              exit 1
+            else
+              echo "VDTESTING_DOWNLOADED_FILES_DIR: $VDTESTING_DOWNLOADED_FILES_DIR"
+            fi
 
   go-tests:
     steps:

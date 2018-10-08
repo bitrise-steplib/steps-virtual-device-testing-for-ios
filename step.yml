@@ -24,7 +24,7 @@ toolkit:
     package_name: github.com/bitrise-steplib/steps-virtual-device-testing-for-ios
 
 inputs:
-  - zip_path:
+  - zip_path: $BITRISE_TEST_BUNDLE_ZIP_PATH
     opts:
       title: "Zip path"
       summary: |
