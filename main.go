@@ -447,6 +447,15 @@ func main() {
 }
 
 func downloadFile(url string, localPath string) error {
+	// on HFS file system the max file name length: 255 UTF-16 encoding units
+	base := filepath.Base(localPath)
+	if len(base) > 255 {
+		log.Warnf("too long filename: %s", base)
+		base = base[len(base)-255:]
+		log.Warnf("trimming to: %s", base)
+		localPath = filepath.Join(filepath.Dir(localPath), base)
+	}
+
 	out, err := os.Create(localPath)
 	if err != nil {
 		return fmt.Errorf("Failed to open the local cache file for write: %s", err)
