@@ -1,6 +1,6 @@
 # iOS Device Testing
 
-Run iOS UI tests on virtual devices.
+Run iOS UI tests on physical devices.
 
 
 ## How to use this Step
