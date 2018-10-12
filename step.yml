@@ -1,7 +1,7 @@
 title: "[BETA] iOS Device Testing"
 summary: Run iOS XCUItests on devices
 description: |-
-  Run iOS XCUItests on virtual devices.
+  Run iOS XCUItests on physical devices.
   The minimal setup of this step would be to select test type.
 
 website: https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios
