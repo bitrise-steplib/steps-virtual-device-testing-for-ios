@@ -13,6 +13,8 @@ type_tags:
   - test
 is_always_run: false
 is_skippable: false
+run_if: ".IsCI"
+
 deps:
   brew:
   - name: go
