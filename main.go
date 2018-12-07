@@ -208,8 +208,8 @@ func main() {
 			newDevice := testing.IosDevice{
 				IosModelId:   deviceParams[0],
 				IosVersionId: deviceParams[1],
-				Locale:       deviceParams[2],
-				Orientation:  deviceParams[3],
+				Orientation:  deviceParams[2],
+				Locale:       deviceParams[3],
 			}
 
 			testModel.EnvironmentMatrix.IosDeviceList.IosDevices = append(testModel.EnvironmentMatrix.IosDeviceList.IosDevices, &newDevice)
