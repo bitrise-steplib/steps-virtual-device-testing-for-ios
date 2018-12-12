@@ -70,7 +70,7 @@ func (configs ConfigsModel) print() {
 	log.Printf("- TestTimeout: %s", configs.TestTimeout)
 	log.Printf("- TestDevices:\n---")
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-	if _, err := fmt.Fprintln(w, "Model\tOS version\tLocale\tOrientation\t"); err != nil {
+	if _, err := fmt.Fprintln(w, "Model\tOS version\tOrientation\tLocale\t"); err != nil {
 		failf("Failed to write in writer")
 	}
 	scanner := bufio.NewScanner(strings.NewReader(configs.TestDevices))
@@ -313,7 +313,7 @@ func main() {
 
 				log.Infof("Test results:")
 				w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-				if _, err := fmt.Fprintln(w, "Model\tOS version\tLocale\tOrientation\tOutcome\t"); err != nil {
+				if _, err := fmt.Fprintln(w, "Model\tOS version\tOrientation\tLocale\tOutcome\t"); err != nil {
 					failf("Failed to write in writer")
 				}
 
@@ -375,7 +375,7 @@ func main() {
 						outcome = colorstring.Blue(outcome)
 					}
 
-					if _, err := fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t", dimensions["Model"], dimensions["Version"], dimensions["Locale"], dimensions["Orientation"], outcome)); err != nil {
+					if _, err := fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t", dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"], outcome)); err != nil {
 						failf("Failed to write in writer")
 					}
 				}
