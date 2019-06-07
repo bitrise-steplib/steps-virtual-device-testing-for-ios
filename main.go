@@ -26,6 +26,8 @@ import (
 	"github.com/bitrise-tools/go-steputils/tools"
 )
 
+const testlabMaxTimeout = 2700
+
 // ConfigsModel ...
 type ConfigsModel struct {
 	// api
@@ -118,6 +120,11 @@ func (configs ConfigsModel) validate() error {
 	}
 	if err := input.ValidateIfPathExists(configs.ZipPath); err != nil {
 		return fmt.Errorf("Issue with ZipPath: %s", err)
+	}
+	if n, err := strconv.Atoi(configs.TestTimeout); err != nil {
+		return fmt.Errorf("Issue with TestTimeout: %s", err)
+	} else if n > testlabMaxTimeout {
+		return fmt.Errorf("Issue with TestTimeout: %d exceeds maximum value of %d", n, testlabMaxTimeout)
 	}
 
 	return nil
