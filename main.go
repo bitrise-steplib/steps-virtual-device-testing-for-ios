@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -26,7 +27,10 @@ import (
 	"github.com/bitrise-tools/go-steputils/tools"
 )
 
-const testlabMaxTimeout = 2700
+const (
+	maxTimeout = 1800
+	timeoutPattern = `^\d+$|^\d+\.\d{1,9}$` // see: https://firebase.google.com/docs/test-lab/reference/testing/rest/v1/projects.testMatrices#testspecification
+)
 
 // ConfigsModel ...
 type ConfigsModel struct {
@@ -121,10 +125,18 @@ func (configs ConfigsModel) validate() error {
 	if err := input.ValidateIfPathExists(configs.ZipPath); err != nil {
 		return fmt.Errorf("Issue with ZipPath: %s", err)
 	}
-	if n, err := strconv.Atoi(configs.TestTimeout); err != nil {
+	if err := validateTimeout(configs.TestTimeout); err != nil {
 		return fmt.Errorf("Issue with TestTimeout: %s", err)
-	} else if n > testlabMaxTimeout {
-		return fmt.Errorf("Issue with TestTimeout: %d exceeds maximum value of %d", n, testlabMaxTimeout)
+	}
+
+	return nil
+}
+
+func validateTimeout(duration string) error {
+	if match, err := regexp.MatchString(timeoutPattern, duration); err != nil {
+		return err
+	} else if !match {
+		return fmt.Errorf("%s does not match pattern %s", duration, timeoutPattern)
 	}
 
 	return nil
@@ -222,8 +234,16 @@ func main() {
 			testModel.EnvironmentMatrix.IosDeviceList.IosDevices = append(testModel.EnvironmentMatrix.IosDeviceList.IosDevices, &newDevice)
 		}
 
+		timeout := configs.TestTimeout
+		if val, err := strconv.ParseFloat(timeout, 64); err != nil {
+			failf("could not parse float from timeout value (%s): %s", timeout, err)
+		} else if val > float64(maxTimeout) {
+			log.Warnf("timeout value (%f) is greater than available maximum (%f). Maximum will be used instead.", val, maxTimeout)
+			timeout = strconv.Itoa(maxTimeout)
+		}
+
 		testModel.TestSpecification = &testing.TestSpecification{
-			TestTimeout: fmt.Sprintf("%ss", configs.TestTimeout),
+			TestTimeout: fmt.Sprintf("%ss", timeout),
 		}
 
 		testModel.TestSpecification.IosXcTest = &testing.IosXcTest{}
