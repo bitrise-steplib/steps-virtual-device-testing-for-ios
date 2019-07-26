@@ -125,18 +125,11 @@ func (configs ConfigsModel) validate() error {
 	if err := input.ValidateIfPathExists(configs.ZipPath); err != nil {
 		return fmt.Errorf("Issue with ZipPath: %s", err)
 	}
-	if err := validateTimeout(configs.TestTimeout); err != nil {
-		return fmt.Errorf("Issue with TestTimeout: %s", err)
-	}
 
-	return nil
-}
-
-func validateTimeout(duration string) error {
-	if match, err := regexp.MatchString(timeoutPattern, duration); err != nil {
+	if match, err := regexp.MatchString(timeoutPattern, configs.TestTimeout); err != nil {
 		return err
 	} else if !match {
-		return fmt.Errorf("%s does not match pattern %s", duration, timeoutPattern)
+		return fmt.Errorf("Issue with TestTimeout: %s does not match pattern %s", configs.TestTimeout, timeoutPattern)
 	}
 
 	return nil
