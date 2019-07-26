@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	maxTimeout = 1800
+	maxTimeoutSeconds = 1800
 	timeoutPattern = `^\d+$|^\d+\.\d{1,9}$` // see: https://firebase.google.com/docs/test-lab/reference/testing/rest/v1/projects.testMatrices#testspecification
 )
 
@@ -237,9 +237,9 @@ func main() {
 		timeout := configs.TestTimeout
 		if val, err := strconv.ParseFloat(timeout, 64); err != nil {
 			failf("could not parse float from timeout value (%s): %s", timeout, err)
-		} else if val > float64(maxTimeout) {
-			log.Warnf("timeout value (%f) is greater than available maximum (%f). Maximum will be used instead.", val, maxTimeout)
-			timeout = strconv.Itoa(maxTimeout)
+		} else if val > float64(maxTimeoutSeconds) {
+			log.Warnf("timeout value (%f) is greater than available maximum (%f). Maximum will be used instead.", val, maxTimeoutSeconds)
+			timeout = strconv.Itoa(maxTimeoutSeconds)
 		}
 
 		testModel.TestSpecification = &testing.TestSpecification{
