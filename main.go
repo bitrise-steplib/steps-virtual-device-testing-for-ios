@@ -135,6 +135,11 @@ func (configs ConfigsModel) validate() error {
 	return nil
 }
 
+func normalize(configs ConfigsModel) ConfigsModel {
+	configs.TestTimeout = strings.TrimSuffix(configs.TestTimeout, "s")
+	return configs
+}
+
 func failf(f string, v ...interface{}) {
 	log.Errorf(f, v...)
 	os.Exit(1)
@@ -149,6 +154,8 @@ func main() {
 	if err := configs.validate(); err != nil {
 		failf("%s", err)
 	}
+
+	configs = normalize(configs)
 
 	fmt.Println()
 
