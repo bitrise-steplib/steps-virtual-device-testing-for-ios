@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -29,7 +28,6 @@ import (
 
 const (
 	maxTimeoutSeconds = 1800
-	timeoutPattern = `^\d+s?$|^\d+\.\d{1,9}s?$` // see: https://firebase.google.com/docs/test-lab/reference/testing/rest/v1/projects.testMatrices#testspecification
 )
 
 // ConfigsModel ...
@@ -125,26 +123,8 @@ func (configs ConfigsModel) validate() error {
 	if err := input.ValidateIfPathExists(configs.ZipPath); err != nil {
 		return fmt.Errorf("Issue with ZipPath: %s", err)
 	}
-	if err := validateTestTimeoutFormat(configs.TestTimeout); err != nil {
-		return fmt.Errorf("Issue with TestTimeout: %s", err)
-	}
 
 	return nil
-}
-
-func validateTestTimeoutFormat(testTimeout string) error {
-	if match, err := regexp.MatchString(timeoutPattern, testTimeout); err != nil {
-		return err
-	} else if !match {
-		return fmt.Errorf("%s does not match pattern %s", testTimeout, timeoutPattern)
-	}
-
-	return nil
-}
-
-func normalize(configs ConfigsModel) ConfigsModel {
-	configs.TestTimeout = strings.TrimSuffix(configs.TestTimeout, "s")
-	return configs
 }
 
 func failf(f string, v ...interface{}) {
@@ -161,8 +141,6 @@ func main() {
 	if err := configs.validate(); err != nil {
 		failf("%s", err)
 	}
-
-	configs = normalize(configs)
 
 	fmt.Println()
 
