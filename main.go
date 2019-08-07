@@ -26,6 +26,10 @@ import (
 	"github.com/bitrise-tools/go-steputils/tools"
 )
 
+const (
+	maxTimeoutSeconds = 1800
+)
+
 // ConfigsModel ...
 type ConfigsModel struct {
 	// api
@@ -215,8 +219,16 @@ func main() {
 			testModel.EnvironmentMatrix.IosDeviceList.IosDevices = append(testModel.EnvironmentMatrix.IosDeviceList.IosDevices, &newDevice)
 		}
 
+		timeout := configs.TestTimeout
+		if val, err := strconv.ParseFloat(timeout, 64); err != nil {
+			failf("could not parse float from timeout value (%s): %s", timeout, err)
+		} else if val > float64(maxTimeoutSeconds) {
+			log.Warnf("timeout value (%f) is greater than available maximum (%f). Maximum will be used instead.", val, maxTimeoutSeconds)
+			timeout = strconv.Itoa(maxTimeoutSeconds)
+		}
+
 		testModel.TestSpecification = &testing.TestSpecification{
-			TestTimeout: fmt.Sprintf("%ss", configs.TestTimeout),
+			TestTimeout: fmt.Sprintf("%ss", timeout),
 		}
 
 		testModel.TestSpecification.IosXcTest = &testing.IosXcTest{}
