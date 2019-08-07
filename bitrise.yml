@@ -59,6 +59,12 @@ workflows:
     - errcheck:
     - go-test:
 
+  maintenance:
+    steps:
+    - go-test:
+        inputs:
+          - packages: ./maintenance
+
   # ----------------------------------------------------------------
   # --- Utility workflows
   dep-update:
