@@ -39,6 +39,7 @@ workflows:
     - path::./:
         inputs:
         - download_test_results: "true"
+        - timeout: 1200
     - script:
         title: Output check
         inputs:
