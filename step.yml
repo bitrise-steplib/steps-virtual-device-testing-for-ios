@@ -39,7 +39,7 @@ inputs:
         Open the folder for your project, then the Build/Products folders inside it.
         You should see a folder Debug-iphoneos and PROJECT_NAME_iphoneos_DEVELOPMENT_TARGET-arm64.xctestrun. Select them both, then right-click on one of them and select Compress 2 items.
       is_required: true
-  - test_devices: "iphone7,11.2,en,portrait"
+  - test_devices: "iphone7,12.3,en,portrait"
     opts:
       title: "Test devices"
       description: |
@@ -48,9 +48,9 @@ inputs:
 
         For example:
 
-        `iphone7,11.2,en,portrait`
+        `iphone7,12.3,en,portrait`
 
-        `iphone7,11.2,en,landscape`
+        `iphone7,12.3,en,landscape`
 
         Available devices and its versions:
         ```
@@ -81,9 +81,9 @@ inputs:
 
         For example:
 
-        `iphone7,11.2,en,portrait`
+        `iphone7,12.3,en,portrait`
 
-        `iphone7,11.2,en,landscape`
+        `iphone7,12.3,en,landscape`
 
         Available devices and its versions:
         ```
