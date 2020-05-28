@@ -309,7 +309,6 @@ screenDensity:          326
 screenX:                750
 screenY:                1334
 supportedVersionIds[0]: 11.4
-supportedVersionIds[1]: 12.2
 tags[0]:                deprecated=11.4
 ---
 deviceCapabilities[0]:  accelerometer
