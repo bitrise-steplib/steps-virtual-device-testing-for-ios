@@ -3,7 +3,8 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 app:
   envs:
-  - SAMPLE_APP_URL: https://github.com/bitrise-samples/sample-apps-ios-simple-objc-with-uitest.git
+  - SAMPLE_APP_URL: https://github.com/bitrise-io/sample-apps-ios-simple-objc.git
+  - SAMPLE_APP_BRANCH: UI_test
 
 workflows:
   test:
@@ -29,7 +30,8 @@ workflows:
         - content: |-
             #!/bin/bash
             set -ev
-            git clone "$SAMPLE_APP_URL" .
+            git clone $SAMPLE_APP_URL .
+            git checkout $SAMPLE_APP_BRANCH
     - certificate-and-profile-installer:
     - xcode-build-for-test:
         inputs:
