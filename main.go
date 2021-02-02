@@ -296,6 +296,9 @@ func main() {
 				failf("Failed to unmarshal response body, error: %s, body: %s", err, string(body))
 			}
 
+			log.Infof("Response:")
+			log.Infof(string(body))
+
 			finished = true
 			testsRunning := 0
 			for _, step := range responseModel.Steps {
