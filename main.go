@@ -272,7 +272,7 @@ func main() {
 				failf("Failed to create http request, error: %s", err)
 			}
 
-			log.Infof("Request: %s", req)
+			log.Infof("Request: %s", req.URL)
 
 			client := &http.Client{}
 			resp, err := client.Do(req)
