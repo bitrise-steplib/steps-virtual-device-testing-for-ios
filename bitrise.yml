@@ -3,72 +3,73 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 app:
   envs:
-  - SAMPLE_APP_URL: https://github.com/bitrise-io/sample-apps-ios-simple-objc.git
-  - SAMPLE_APP_BRANCH: UI_test
+    - SAMPLE_APP_URL: https://github.com/bitrise-io/sample-apps-ios-simple-objc.git
+    - SAMPLE_APP_BRANCH: UI_test
 
 workflows:
   test:
     before_run:
-    - audit-this-step
-    - go-tests
+      - audit-this-step
+      - go-tests
     steps:
-    - script:
-        inputs:
-        - content: |-
-            #!/bin/bash
-            set -ex
-            rm -rf "$BITRISE_SOURCE_DIR/_tmp"
-            mkdir -p "$BITRISE_SOURCE_DIR/_tmp"
-    - change-workdir:
-        title: Switch working dir to _tmp dir
-        run_if: true
-        inputs:
-        - path: "$BITRISE_SOURCE_DIR/_tmp"
-        - is_create_path: true
-    - script:
-        inputs:
-        - content: |-
-            #!/bin/bash
-            set -ev
-            git clone $SAMPLE_APP_URL .
-            git checkout $SAMPLE_APP_BRANCH
-    - certificate-and-profile-installer:
-    - xcode-build-for-test:
-        inputs:
-        - project_path: ./ios-simple-objc/ios-simple-objc.xcodeproj
-        - scheme: ios-simple-objc
-        - output_tool: xcodebuild
-    - path::./:
-        inputs:
-        - download_test_results: "true"
-    - script:
-        title: Output check
-        inputs:
-        - content: |-
-            #!/bin/bash
-            set -e
-            if [[ -z "$VDTESTING_DOWNLOADED_FILES_DIR" ]] ; then
-              echo "VDTESTING_DOWNLOADED_FILES_DIR should not be empty"
-              exit 1
-            else
-              echo "VDTESTING_DOWNLOADED_FILES_DIR: $VDTESTING_DOWNLOADED_FILES_DIR"
-            fi
+      - script:
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+                rm -rf "$BITRISE_SOURCE_DIR/_tmp"
+                mkdir -p "$BITRISE_SOURCE_DIR/_tmp"
+      - change-workdir:
+          title: Switch working dir to _tmp dir
+          run_if: true
+          inputs:
+            - path: "$BITRISE_SOURCE_DIR/_tmp"
+            - is_create_path: true
+      - script:
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ev
+                git clone $SAMPLE_APP_URL .
+                git checkout $SAMPLE_APP_BRANCH
+      - certificate-and-profile-installer:
+      - xcode-build-for-test:
+          inputs:
+            - project_path: ./ios-simple-objc/ios-simple-objc.xcodeproj
+            - scheme: ios-simple-objc
+            - output_tool: xcodebuild
+      - path::./:
+          inputs:
+            - download_test_results: "true"
+      - deploy-to-bitrise-io:
+      - script:
+          title: Output check
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -e
+                if [[ -z "$VDTESTING_DOWNLOADED_FILES_DIR" ]] ; then
+                  echo "VDTESTING_DOWNLOADED_FILES_DIR should not be empty"
+                  exit 1
+                else
+                  echo "VDTESTING_DOWNLOADED_FILES_DIR: $VDTESTING_DOWNLOADED_FILES_DIR"
+                fi
 
   go-tests:
     steps:
-    - go-list:
-    - golint:
-    - errcheck:
-    # Ignoring maintenance test as it needs gcloud binary
-    - go-test:
-        inputs:
-          - packages: "."
+      - go-list:
+      - golint:
+      - errcheck:
+      # Ignoring maintenance test as it needs gcloud binary
+      - go-test:
+          inputs:
+            - packages: "."
 
   maintenance:
     steps:
-    - go-test:
-        inputs:
-          - packages: "./maintenance"
+      - go-test:
+          inputs:
+            - packages: "./maintenance"
 
   # ----------------------------------------------------------------
   # --- Utility workflows
@@ -77,25 +78,25 @@ workflows:
     description: |
       Used for updating bitrise dependencies with godep
     steps:
-    - script:
-        title: Dependency update
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            go get -u -v github.com/bitrise-tools/gows
-            go get -u -v github.com/golang/dep/cmd/dep
-            gows clear
-            gows dep ensure -v
-            gows dep ensure -v -update
+      - script:
+          title: Dependency update
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
+                go get -u -v github.com/bitrise-tools/gows
+                go get -u -v github.com/golang/dep/cmd/dep
+                gows clear
+                gows dep ensure -v
+                gows dep ensure -v -update
 
   # ----------------------------------------------------------------
   # --- workflows to Share this step into a Step Library
   audit-this-step:
     steps:
-    - script:
-        inputs:
-        - content: |-
-            #!/bin/bash
-            set -ex
-            stepman audit --step-yml ./step.yml
+      - script:
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+                stepman audit --step-yml ./step.yml
