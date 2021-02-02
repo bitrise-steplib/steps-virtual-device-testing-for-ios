@@ -272,6 +272,8 @@ func main() {
 				failf("Failed to create http request, error: %s", err)
 			}
 
+			log.Infof("Request: %s", req)
+
 			client := &http.Client{}
 			resp, err := client.Do(req)
 			if resp.StatusCode != http.StatusOK || err != nil {
