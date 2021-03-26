@@ -144,7 +144,9 @@ screenX:                1536
 screenY:                2048
 supportedVersionIds[0]: 11.2
 supportedVersionIds[1]: 12.0
+supportedVersionIds[2]: 14.1
 tags[0]:                deprecated=11.2
+tags[1]:                deprecated=12.0
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -174,6 +176,7 @@ screenX:                1536
 screenY:                2048
 supportedVersionIds[0]: 11.2
 supportedVersionIds[1]: 12.0
+supportedVersionIds[2]: 14.1
 tags[0]:                deprecated=11.2
 ---
 deviceCapabilities[0]:  accelerometer
@@ -241,6 +244,7 @@ screenDensity:          326
 screenX:                828
 screenY:                1792
 supportedVersionIds[0]: 13.3
+supportedVersionIds[1]: 13.6
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -276,6 +280,7 @@ screenDensity:          458
 screenX:                1125
 screenY:                2436
 supportedVersionIds[0]: 13.3
+supportedVersionIds[1]: 14.1
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -349,6 +354,7 @@ supportedVersionIds[2]: 11.4
 supportedVersionIds[3]: 12.0
 tags[0]:                deprecated=10.3
 tags[1]:                deprecated=11.2
+tags[2]:                deprecated=11.4
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -388,6 +394,7 @@ supportedVersionIds[1]: 11.4
 supportedVersionIds[2]: 12.0
 supportedVersionIds[3]: 12.3
 tags[0]:                deprecated=11.2
+tags[1]:                deprecated=11.4
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -425,6 +432,7 @@ screenY:                1920
 supportedVersionIds[0]: 11.2
 supportedVersionIds[1]: 11.4
 supportedVersionIds[2]: 12.0
+supportedVersionIds[3]: 14.1
 tags[0]:                deprecated=11.2
 ---
 deviceCapabilities[0]:  accelerometer
@@ -462,7 +470,9 @@ screenX:                750
 screenY:                1334
 supportedVersionIds[0]: 11.2
 supportedVersionIds[1]: 11.4
-supportedVersionIds[2]: 12.0
+supportedVersionIds[2]: 12.4
+supportedVersionIds[3]: 13.6
+supportedVersionIds[4]: 14.1
 tags[0]:                deprecated=11.2
 tags[1]:                default
 ---
@@ -504,6 +514,7 @@ supportedVersionIds[1]: 11.4
 supportedVersionIds[2]: 12.0
 supportedVersionIds[3]: 12.3
 tags[0]:                deprecated=11.2
+tags[1]:                deprecated=11.4
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -542,6 +553,8 @@ supportedVersionIds[1]: 11.4
 supportedVersionIds[2]: 12.0
 supportedVersionIds[3]: 12.3
 tags[0]:                deprecated=11.2
+tags[1]:                deprecated=11.4
+tags[2]:                deprecated=12.3
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -578,9 +591,8 @@ screenX:                1125
 screenY:                2436
 supportedVersionIds[0]: 11.2
 supportedVersionIds[1]: 11.4
-supportedVersionIds[2]: 12.0
-supportedVersionIds[3]: 12.3
 tags[0]:                deprecated=11.2
+tags[1]:                deprecated=11.4
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -651,8 +663,6 @@ screenDensity:          458
 screenX:                1125
 screenY:                2436
 supportedVersionIds[0]: 12.0
-supportedVersionIds[1]: 12.1
-supportedVersionIds[2]: 12.3
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
