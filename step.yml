@@ -54,26 +54,26 @@ inputs:
 
         Available devices and its versions:
         ```
-        +-------------+-----------------------+---------------------+----------------------------------+
-        |   MODEL_ID  |          NAME         |    OS_VERSION_IDS   |               TAGS               |
-        +-------------+-----------------------+---------------------+----------------------------------+
-        | ipad5       | iPad (5th generation) | 11.2,12.0           | deprecated=11.2                  |
-        | ipadmini4   | iPad mini 4           | 11.2,12.0           | deprecated=11.2                  |
-        | ipadpro_105 | iPad Pro (10.5-inch)  | 11.2                | deprecated=11.2                  |
-        | iphone11    | iPhone 11             | 13.3                |                                  |
-        | iphone11pro | iPhone 11 Pro         | 13.3                |                                  |
-        | iphone6     | iPhone 6              | 11.4                | deprecated=11.4                  |
-        | iphone6s    | iPhone 6s             | 10.3,11.2,11.4,12.0 | deprecated=10.3, deprecated=11.2 |
-        | iphone7     | iPhone 7              | 11.2,11.4,12.0,12.3 | deprecated=11.2                  |
-        | iphone7plus | iPhone 7 Plus         | 11.2,11.4,12.0      | deprecated=11.2                  |
-        | iphone8     | iPhone 8              | 11.2,11.4,12.0      | deprecated=11.2, default         |
-        | iphone8plus | iPhone 8 Plus         | 11.2,11.4,12.0,12.3 | deprecated=11.2                  |
-        | iphonese    | iPhone SE             | 11.2,11.4,12.0,12.3 | deprecated=11.2                  |
-        | iphonex     | iPhone X              | 11.2,11.4,12.0,12.3 | deprecated=11.2                  |
-        | iphonexr    | iPhone XR             | 13.2                |                                  |
-        | iphonexs    | iPhone XS             | 12.0,12.1,12.3      |                                  |
-        | iphonexsmax | iPhone XS Max         | 12.0,12.1,12.3      |                                  |
-        +-------------+-----------------------+---------------------+----------------------------------+
+        +-------------+-----------------------+--------------------------+---------------------------------------------------+
+        |   MODEL_ID  |          NAME         |      OS_VERSION_IDS      |                       TAGS                        |
+        +-------------+-----------------------+--------------------------+---------------------------------------------------+
+        | ipad5       │ iPad (5th generation) │ 11.2,12.0,14.1           │ deprecated=11.2, deprecated=12.0                  |
+        | ipadmini4   │ iPad mini 4           │ 11.2,12.0,14.1           │ deprecated=11.2                                   │
+        │ ipadpro_105 │ iPad Pro (10.5-inch)  │ 11.2                     │ deprecated=11.2                                   │
+        │ iphone11    │ iPhone 11             │ 13.3,13.6                │                                                   │
+        │ iphone11pro │ iPhone 11 Pro         │ 13.3,14.1                │                                                   │
+        │ iphone6     │ iPhone 6              │ 11.4                     │ deprecated=11.4                                   │
+        │ iphone6s    │ iPhone 6s             │ 10.3,11.2,11.4,12.0      │ deprecated=10.3, deprecated=11.2, deprecated=11.4 │
+        │ iphone7     │ iPhone 7              │ 11.2,11.4,12.0,12.3      │ deprecated=11.2, deprecated=11.4                  │
+        │ iphone7plus │ iPhone 7 Plus         │ 11.2,11.4,12.0,14.1      │ deprecated=11.2                                   │
+        │ iphone8     │ iPhone 8              │ 11.2,11.4,12.4,13.6,14.1 │ deprecated=11.2, default                          │
+        │ iphone8plus │ iPhone 8 Plus         │ 11.2,11.4,12.0,12.3      │ deprecated=11.2, deprecated=11.4                  │
+        │ iphonese    │ iPhone SE             │ 11.2,11.4,12.0,12.3      │ deprecated=11.2, deprecated=11.4, deprecated=12.3 │
+        │ iphonex     │ iPhone X              │ 11.2,11.4                │ deprecated=11.2, deprecated=11.4                  │
+        │ iphonexr    │ iPhone XR             │ 13.2                     │                                                   │
+        │ iphonexs    │ iPhone XS             │ 12.0                     │                                                   │
+        │ iphonexsmax │ iPhone XS Max         │ 12.0,12.1,12.3           |                                                   |
+        +-------------+-----------------------+--------------------------+---------------------------------------------------+
         ```
       summary: |
         Format:
@@ -87,26 +87,26 @@ inputs:
 
         Available devices and its versions:
         ```
-        ┌─────────────┬───────────────────────┬─────────────────────┬──────────────────────────────────┐
-        │   MODEL_ID  │          NAME         │    OS_VERSION_IDS   │               TAGS               │
-        ├─────────────┼───────────────────────┼─────────────────────┼──────────────────────────────────┤
-        │ ipad5       │ iPad (5th generation) │ 11.2,12.0           │ deprecated=11.2                  │
-        │ ipadmini4   │ iPad mini 4           │ 11.2,12.0           │ deprecated=11.2                  │
-        │ ipadpro_105 │ iPad Pro (10.5-inch)  │ 11.2                │ deprecated=11.2                  │
-        │ iphone11    │ iPhone 11             │ 13.3                │                                  │
-        │ iphone11pro │ iPhone 11 Pro         │ 13.3                │                                  │
-        │ iphone6     │ iPhone 6              │ 11.4,12.2           │ deprecated=11.4                  │
-        │ iphone6s    │ iPhone 6s             │ 10.3,11.2,11.4,12.0 │ deprecated=10.3, deprecated=11.2 │
-        │ iphone7     │ iPhone 7              │ 11.2,11.4,12.0,12.3 │ deprecated=11.2                  │
-        │ iphone7plus │ iPhone 7 Plus         │ 11.2,11.4,12.0      │ deprecated=11.2                  │
-        │ iphone8     │ iPhone 8              │ 11.2,11.4,12.0      │ deprecated=11.2, default         │
-        │ iphone8plus │ iPhone 8 Plus         │ 11.2,11.4,12.0,12.3 │ deprecated=11.2                  │
-        │ iphonese    │ iPhone SE             │ 11.2,11.4,12.0,12.3 │ deprecated=11.2                  │
-        │ iphonex     │ iPhone X              │ 11.2,11.4,12.0,12.3 │ deprecated=11.2                  │
-        │ iphonexr    │ iPhone XR             │ 13.2                │                                  │
-        │ iphonexs    │ iPhone XS             │ 12.0,12.1,12.3      │                                  │
-        │ iphonexsmax │ iPhone XS Max         │ 12.0,12.1,12.3      │                                  │
-        └─────────────┴───────────────────────┴─────────────────────┴──────────────────────────────────┘
+        +-------------+-----------------------+--------------------------+---------------------------------------------------+
+        |   MODEL_ID  |          NAME         |      OS_VERSION_IDS      |                       TAGS                        |
+        +-------------+-----------------------+--------------------------+---------------------------------------------------+
+        | ipad5       │ iPad (5th generation) │ 11.2,12.0,14.1           │ deprecated=11.2, deprecated=12.0                  |
+        | ipadmini4   │ iPad mini 4           │ 11.2,12.0,14.1           │ deprecated=11.2                                   │
+        │ ipadpro_105 │ iPad Pro (10.5-inch)  │ 11.2                     │ deprecated=11.2                                   │
+        │ iphone11    │ iPhone 11             │ 13.3,13.6                │                                                   │
+        │ iphone11pro │ iPhone 11 Pro         │ 13.3,14.1                │                                                   │
+        │ iphone6     │ iPhone 6              │ 11.4                     │ deprecated=11.4                                   │
+        │ iphone6s    │ iPhone 6s             │ 10.3,11.2,11.4,12.0      │ deprecated=10.3, deprecated=11.2, deprecated=11.4 │
+        │ iphone7     │ iPhone 7              │ 11.2,11.4,12.0,12.3      │ deprecated=11.2, deprecated=11.4                  │
+        │ iphone7plus │ iPhone 7 Plus         │ 11.2,11.4,12.0,14.1      │ deprecated=11.2                                   │
+        │ iphone8     │ iPhone 8              │ 11.2,11.4,12.4,13.6,14.1 │ deprecated=11.2, default                          │
+        │ iphone8plus │ iPhone 8 Plus         │ 11.2,11.4,12.0,12.3      │ deprecated=11.2, deprecated=11.4                  │
+        │ iphonese    │ iPhone SE             │ 11.2,11.4,12.0,12.3      │ deprecated=11.2, deprecated=11.4, deprecated=12.3 │
+        │ iphonex     │ iPhone X              │ 11.2,11.4                │ deprecated=11.2, deprecated=11.4                  │
+        │ iphonexr    │ iPhone XR             │ 13.2                     │                                                   │
+        │ iphonexs    │ iPhone XS             │ 12.0                     │                                                   │
+        │ iphonexsmax │ iPhone XS Max         │ 12.0,12.1,12.3           |                                                   |
+        +-------------+-----------------------+--------------------------+---------------------------------------------------+
         ```
       is_required: true
   - test_timeout: 900
