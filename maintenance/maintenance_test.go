@@ -142,11 +142,7 @@ name:                   iPad (5th generation)
 screenDensity:          264
 screenX:                1536
 screenY:                2048
-supportedVersionIds[0]: 11.2
-supportedVersionIds[1]: 12.0
-supportedVersionIds[2]: 14.1
-tags[0]:                deprecated=11.2
-tags[1]:                deprecated=12.0
+supportedVersionIds[0]: 14.1
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -178,6 +174,7 @@ supportedVersionIds[0]: 11.2
 supportedVersionIds[1]: 12.0
 supportedVersionIds[2]: 14.1
 tags[0]:                deprecated=11.2
+tags[1]:                deprecated=12.0
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -349,12 +346,10 @@ screenDensity:          326
 screenX:                750
 screenY:                1334
 supportedVersionIds[0]: 10.3
-supportedVersionIds[1]: 11.2
-supportedVersionIds[2]: 11.4
-supportedVersionIds[3]: 12.0
+supportedVersionIds[1]: 11.4
+supportedVersionIds[2]: 12.0
 tags[0]:                deprecated=10.3
-tags[1]:                deprecated=11.2
-tags[2]:                deprecated=11.4
+tags[1]:                deprecated=11.4
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -389,12 +384,9 @@ name:                   iPhone 7
 screenDensity:          326
 screenX:                750
 screenY:                1334
-supportedVersionIds[0]: 11.2
-supportedVersionIds[1]: 11.4
-supportedVersionIds[2]: 12.0
-supportedVersionIds[3]: 12.3
-tags[0]:                deprecated=11.2
-tags[1]:                deprecated=11.4
+supportedVersionIds[0]: 11.4
+supportedVersionIds[1]: 12.3
+tags[0]:                deprecated=11.4
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -429,11 +421,9 @@ name:                   iPhone 7 Plus
 screenDensity:          401
 screenX:                1080
 screenY:                1920
-supportedVersionIds[0]: 11.2
-supportedVersionIds[1]: 11.4
-supportedVersionIds[2]: 12.0
-supportedVersionIds[3]: 14.1
-tags[0]:                deprecated=11.2
+supportedVersionIds[0]: 12.0
+supportedVersionIds[1]: 14.1
+tags[0]:                deprecated=12.0
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -470,9 +460,10 @@ screenX:                750
 screenY:                1334
 supportedVersionIds[0]: 11.2
 supportedVersionIds[1]: 11.4
-supportedVersionIds[2]: 12.4
-supportedVersionIds[3]: 13.6
-supportedVersionIds[4]: 14.1
+supportedVersionIds[2]: 12.0
+supportedVersionIds[3]: 12.4
+supportedVersionIds[4]: 13.6
+supportedVersionIds[5]: 14.1
 tags[0]:                deprecated=11.2
 tags[1]:                default
 ---
@@ -510,11 +501,9 @@ screenDensity:          401
 screenX:                1080
 screenY:                1920
 supportedVersionIds[0]: 11.2
-supportedVersionIds[1]: 11.4
-supportedVersionIds[2]: 12.0
-supportedVersionIds[3]: 12.3
+supportedVersionIds[1]: 12.0
+supportedVersionIds[2]: 12.3
 tags[0]:                deprecated=11.2
-tags[1]:                deprecated=11.4
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -548,13 +537,10 @@ name:                   iPhone SE
 screenDensity:          326
 screenX:                640
 screenY:                1136
-supportedVersionIds[0]: 11.2
-supportedVersionIds[1]: 11.4
-supportedVersionIds[2]: 12.0
-supportedVersionIds[3]: 12.3
-tags[0]:                deprecated=11.2
-tags[1]:                deprecated=11.4
-tags[2]:                deprecated=12.3
+supportedVersionIds[0]: 11.4
+supportedVersionIds[1]: 12.0
+tags[0]:                deprecated=11.4
+tags[1]:                deprecated=12.0
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -589,10 +575,8 @@ name:                   iPhone X
 screenDensity:          458
 screenX:                1125
 screenY:                2436
-supportedVersionIds[0]: 11.2
-supportedVersionIds[1]: 11.4
-tags[0]:                deprecated=11.2
-tags[1]:                deprecated=11.4
+supportedVersionIds[0]: 11.4
+tags[0]:                deprecated=11.4
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -627,7 +611,8 @@ name:                   iPhone XR
 screenDensity:          326
 screenX:                828
 screenY:                1792
-supportedVersionIds[0]: 13.2
+supportedVersionIds[0]: 12.4
+supportedVersionIds[1]: 13.2
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -663,6 +648,7 @@ screenDensity:          458
 screenX:                1125
 screenY:                2436
 supportedVersionIds[0]: 12.0
+tags[0]:                deprecated=12.0
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -699,4 +685,5 @@ screenX:                1242
 screenY:                2688
 supportedVersionIds[0]: 12.0
 supportedVersionIds[1]: 12.1
-supportedVersionIds[2]: 12.3`
+supportedVersionIds[2]: 12.3
+tags[0]:                deprecated=12.0`
