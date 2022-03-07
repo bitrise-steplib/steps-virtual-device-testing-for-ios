@@ -1,9 +1,36 @@
 title: "[BETA] iOS Device Testing"
 summary: Run iOS XCUItests on devices
 description: |-
-  Run iOS XCUItests on physical devices.
-  The minimal setup of this step would be to select test type.
+  Run iOS XCUItests on physical devices with Google's Firebase Test Lab. You do not have to set up and register your own devices and you don't need your own Firebase account.
 
+  We'll go over the most important configuration information for the Step. For more information, check out our [detailed guide](https://devcenter.bitrise.io/en/testing/device-testing-for-ios.html).
+
+  ### Configuring the Step 
+
+  To use the Step, you need to build an IPA file with Xcode's `build-for-testing` action. You can use our dedicated Step:
+
+  1. Add the **Xcode Build for testing for iOS** Step to your Workflow. 
+
+     The Step exports a .zip file that contains your test directory (by default, it’s `Debug-iphoneos`) and the xctestrun file.
+  1. Add the **iOS Device Testing** Step to the Workflow.
+  1. In the **Test devices** input field, specify the devices on which you want to test the app.
+  1. Optionally, you can set a test timeout and configure file download in the **Debug** input group. The path to the downloaded files will be exported as an Environment Variable and it can be used by subsequent Steps. 
+  1. Make sure you have the **Deploy to Bitrise.io** Step in your Workflow, with version 1.4.1 or newer. With the older versions of the Step, you won’t be able to check your results on the Test Reports page!
+
+  Please note you should not change the value of the **API token** and the **Test API's base URL** input. 
+
+  ### Troubleshooting 
+
+  If you get the **Build already exists** error, it is because you have more than one instance of the Step in your Workflow. This doesn't work as Bitrise sends the build slug to Firebase and having the Step more than once in the same Workflow results in sending the same build slug multiple times. 
+
+  ### Useful links 
+
+  [Device testing for iOS](https://devcenter.bitrise.io/en/testing/device-testing-for-ios.html)
+
+  ### Related Steps 
+
+  [Xcode Build for testing for iOS](https://www.bitrise.io/integrations/steps/xcode-build-for-test)
+  [Xcode Test for iOS](https://www.bitrise.io/integrations/steps/xcode-test)
 website: https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios
 source_code_url: https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios
 support_url: https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/issues
@@ -45,13 +72,9 @@ inputs:
       description: |
         Format:
         One device configuration per line and the parameters are separated with `,` in the order of: `deviceID,version,language,orientation`
-
         For example:
-
         `iphone8,14.7,en,portrait`
-
         `iphone8,14.7,en,landscape`
-
         Available devices and its versions:
         ```
         ┌─────────────┬───────────────────────┬───────────────────────────────┬──────────────────────────┐
@@ -67,18 +90,13 @@ inputs:
         │ iphonexr    │ iPhone XR             │ 12.4,13.2                     │                          │
         │ iphonexsmax │ iPhone XS Max         │ 12.1                          │                          │
         └─────────────┴───────────────────────┴───────────────────────────────┴──────────────────────────┘
-
         ```
       summary: |
         Format:
         One device configuration per line and the parameters are separated with `,` in the order of: `deviceID,version,language,orientation`
-
         For example:
-
         `iphone8,14.7,en,portrait`
-
         `iphone8,14.7,en,landscape`
-
         Available devices and its versions:
         ```
         ┌─────────────┬───────────────────────┬───────────────────────────────┬──────────────────────────┐
@@ -94,7 +112,6 @@ inputs:
         │ iphonexr    │ iPhone XR             │ 12.4,13.2                     │                          │
         │ iphonexsmax │ iPhone XS Max         │ 12.1                          │                          │
         └─────────────┴───────────────────────┴───────────────────────────────┴──────────────────────────┘
-
         ```
       is_required: true
   - test_timeout: 900
