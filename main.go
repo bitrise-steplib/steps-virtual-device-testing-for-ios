@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	maxTimeoutSeconds = 1800
+	maxTimeoutSeconds = 2700
 )
 
 // ConfigsModel ...
