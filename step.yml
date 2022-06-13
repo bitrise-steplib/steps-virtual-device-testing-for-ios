@@ -1,4 +1,4 @@
-title: "[BETA] iOS Device Testing"
+title: "iOS Device Testing"
 summary: Run iOS XCUItests on devices
 description: |-
   Run iOS XCUItests on physical devices with Google's Firebase Test Lab. You do not have to set up and register your own devices and you don't need your own Firebase account.
