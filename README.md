@@ -1,92 +1,80 @@
-# iOS Device Testing
+# [BETA] iOS Device Testing
 
-Run iOS UI tests on physical devices.
+[![Step changelog](https://shields.io/github/v/release/bitrise-steplib/steps-virtual-device-testing-for-ios?include_prereleases&label=changelog&color=blueviolet)](https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/releases)
 
+Run iOS XCUItests on devices
 
-## How to use this Step
+<details>
+<summary>Description</summary>
 
-Can be run directly with the [bitrise CLI](https://github.com/bitrise-io/bitrise),
-just `git clone` this repository, `cd` into it's folder in your Terminal/Command Line
-and call `bitrise run test`.
+Run iOS XCUItests on physical devices with Google's Firebase Test Lab. You do not have to set up and register your own devices and you don't need your own Firebase account.
 
-*Check the `bitrise.yml` file for required inputs which have to be
-added to your `.bitrise.secrets.yml` file!*
+We'll go over the most important configuration information for the Step. For more information, check out our [detailed guide](https://devcenter.bitrise.io/en/testing/device-testing-for-ios.html).
 
-Step by step:
+### Configuring the Step 
 
-1. Open up your Terminal / Command Line
-2. `git clone` the repository
-3. `cd` into the directory of the step (the one you just `git clone`d)
-5. Create a `.bitrise.secrets.yml` file in the same directory of `bitrise.yml` - the `.bitrise.secrets.yml` is a git ignored file, you can store your secrets in
-6. Check the `bitrise.yml` file for any secret you should set in `.bitrise.secrets.yml`
-  * Best practice is to mark these options with something like `# define these in your .bitrise.secrets.yml`, in the `app:envs` section.
-7. Once you have all the required secret parameters in your `.bitrise.secrets.yml` you can just run this step with the [bitrise CLI](https://github.com/bitrise-io/bitrise): `bitrise run test`
+To use the Step, you need to build an IPA file with Xcode's `build-for-testing` action. You can use our dedicated Step:
 
-An example `.bitrise.secrets.yml` file:
+1. Add the **Xcode Build for testing for iOS** Step to your Workflow. 
 
-```
-envs:
-- A_SECRET_PARAM_ONE: the value for secret one
-- A_SECRET_PARAM_TWO: the value for secret two
-```
+   The Step exports a .zip file that contains your test directory (by default, it’s `Debug-iphoneos`) and the xctestrun file.
+1. Add the **iOS Device Testing** Step to the Workflow.
+1. In the **Test devices** input field, specify the devices on which you want to test the app.
+1. Optionally, you can set a test timeout and configure file download in the **Debug** input group. The path to the downloaded files will be exported as an Environment Variable and it can be used by subsequent Steps. 
+1. Make sure you have the **Deploy to Bitrise.io** Step in your Workflow, with version 1.4.1 or newer. With the older versions of the Step, you won’t be able to check your results on the Test Reports page!
 
-## How to create your own step
+Please note you should not change the value of the **API token** and the **Test API's base URL** input. 
 
-1. Create a new git repository for your step (**don't fork** the *step template*, create a *new* repository)
-2. Copy the [step template](https://github.com/bitrise-steplib/step-template) files into your repository
-3. Fill the `step.sh` with your functionality
-4. Wire out your inputs to `step.yml` (`inputs` section)
-5. Fill out the other parts of the `step.yml` too
-6. Provide test values for the inputs in the `bitrise.yml`
-7. Run your step with `bitrise run test` - if it works, you're ready
+### Troubleshooting 
 
-__For Step development guidelines & best practices__ check this documentation: [https://github.com/bitrise-io/bitrise/blob/master/_docs/step-development-guideline.md](https://github.com/bitrise-io/bitrise/blob/master/_docs/step-development-guideline.md).
+If you get the **Build already exists** error, it is because you have more than one instance of the Step in your Workflow. This doesn't work as Bitrise sends the build slug to Firebase and having the Step more than once in the same Workflow results in sending the same build slug multiple times. 
 
-**NOTE:**
+### Useful links 
 
-If you want to use your step in your project's `bitrise.yml`:
+[Device testing for iOS](https://devcenter.bitrise.io/en/testing/device-testing-for-ios.html)
 
-1. git push the step into it's repository
-2. reference it in your `bitrise.yml` with the `git::PUBLIC-GIT-CLONE-URL@BRANCH` step reference style:
+### Related Steps 
 
-```
-- git::https://github.com/user/my-step.git@branch:
-   title: My step
-   inputs:
-   - my_input_1: "my value 1"
-   - my_input_2: "my value 2"
-```
+[Xcode Build for testing for iOS](https://www.bitrise.io/integrations/steps/xcode-build-for-test)
+[Xcode Test for iOS](https://www.bitrise.io/integrations/steps/xcode-test)
+</details>
 
-You can find more examples of step reference styles
-in the [bitrise CLI repository](https://github.com/bitrise-io/bitrise/blob/master/_examples/tutorials/steps-and-workflows/bitrise.yml#L65).
+## 🧩 Get started
 
-## How to contribute to this Step
+Add this step directly to your workflow in the [Bitrise Workflow Editor](https://devcenter.bitrise.io/steps-and-workflows/steps-and-workflows-index/).
 
-1. Fork this repository
-2. `git clone` it
-3. Create a branch you'll work on
-4. To use/test the step just follow the **How to use this Step** section
-5. Do the changes you want to
-6. Run/test the step before sending your contribution
-  * You can also test the step in your `bitrise` project, either on your Mac or on [bitrise.io](https://www.bitrise.io)
-  * You just have to replace the step ID in your project's `bitrise.yml` with either a relative path, or with a git URL format
-  * (relative) path format: instead of `- original-step-id:` use `- path::./relative/path/of/script/on/your/Mac:`
-  * direct git URL format: instead of `- original-step-id:` use `- git::https://github.com/user/step.git@branch:`
-  * You can find more example of alternative step referencing at: https://github.com/bitrise-io/bitrise/blob/master/_examples/tutorials/steps-and-workflows/bitrise.yml
-7. Once you're done just commit your changes & create a Pull Request
+You can also run this step directly with [Bitrise CLI](https://github.com/bitrise-io/bitrise).
 
+## ⚙️ Configuration
 
-## Share your own Step
+<details>
+<summary>Inputs</summary>
 
-You can share your Step or step version with the [bitrise CLI](https://github.com/bitrise-io/bitrise). If you use the `bitrise.yml` included in this repository, all you have to do is:
+| Key | Description | Flags | Default |
+| --- | --- | --- | --- |
+| `zip_path` | Open finder, and navigate to the directory you designated for Derived Data output. Open the folder for your project, then the Build/Products folders inside it. You should see a folder Debug-iphoneos and PROJECT_NAME_iphoneos_DEVELOPMENT_TARGET-arm64.xctestrun. Select them both, then right-click on one of them and select Compress 2 items.  | required | `$BITRISE_TEST_BUNDLE_ZIP_PATH` |
+| `test_devices` | Format: One device configuration per line and the parameters are separated with `,` in the order of: `deviceID,version,language,orientation` For example: `iphone8,14.7,en,portrait` `iphone8,14.7,en,landscape` Available devices and its versions: ``` ┌─────────────┬───────────────────────┬────────────────┬──────────────────────────┐ │   MODEL_ID  │          NAME         │ OS_VERSION_IDS │           TAGS           │ ├─────────────┼───────────────────────┼────────────────┼──────────────────────────┤ │ ipad5       │ iPad (5th generation) │ 15.4           │                          │ │ ipadmini4   │ iPad mini 4           │ 15.4           │                          │ │ iphone11    │ iPhone 11             │ 13.3,13.6      │                          │ │ iphone11pro │ iPhone 11 Pro         │ 13.3,14.7      │                          │ │ iphone13pro │ iPhone 13 Pro         │ 15.2           │                          │ │ iphone8     │ iPhone 8              │ 12.4,13.6,14.7 │ deprecated=12.4, default │ │ iphone8plus │ iPhone 8 Plus         │ 12.0           │ deprecated=12.0          │ │ iphonexr    │ iPhone XR             │ 12.4,13.2      │ deprecated=12.4          │ │ iphonexsmax │ iPhone XS Max         │ 12.1           │ deprecated=12.1          │ └─────────────┴───────────────────────┴────────────────┴──────────────────────────┘ ```  | required | `iphone8,14.7,en,portrait` |
+| `test_timeout` | Max time a test execution is allowed to run before it is automatically canceled. The default value is 900 (15 min).  Duration in seconds with up to nine fractional digits. Example: "3.5".  |  | `900` |
+| `download_test_results` | If this input is set to `true` all files generated in the test run will be downloaded. Otherwise, no any file will be downloaded.  | required | `false` |
+| `api_base_url` | The URL where test API is accessible.  | required | `https://vdt.bitrise.io/test` |
+| `api_token` | The token required to authenticate with the API.  | required, sensitive | `$ADDON_VDTESTING_API_TOKEN` |
+</details>
 
-1. In your Terminal / Command Line `cd` into this directory (where the `bitrise.yml` of the step is located)
-1. Run: `bitrise run test` to test the step
-1. Run: `bitrise run audit-this-step` to audit the `step.yml`
-1. Check the `share-this-step` workflow in the `bitrise.yml`, and fill out the
-   `envs` if you haven't done so already (don't forget to bump the version number if this is an update
-   of your step!)
-1. Then run: `bitrise run share-this-step` to share the step (version) you specified in the `envs`
-1. Send the Pull Request, as described in the logs of `bitrise run share-this-step`
+<details>
+<summary>Outputs</summary>
 
-That's all ;)
+| Environment Variable | Description |
+| --- | --- |
+| `VDTESTING_DOWNLOADED_FILES_DIR` | The directory containing the downloaded files if you have set `download_test_results` inputs above. |
+</details>
+
+## 🙋 Contributing
+
+We welcome [pull requests](https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/pulls) and [issues](https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/issues) against this repository.
+
+For pull requests, work on your changes in a forked repository and use the Bitrise CLI to [run step tests locally](https://devcenter.bitrise.io/bitrise-cli/run-your-first-build/).
+
+Learn more about developing steps:
+
+- [Create your own step](https://devcenter.bitrise.io/contributors/create-your-own-step/)
+- [Testing your Step](https://devcenter.bitrise.io/contributors/testing-and-versioning-your-steps/)
