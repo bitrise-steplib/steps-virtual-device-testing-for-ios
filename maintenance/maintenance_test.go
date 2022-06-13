@@ -142,8 +142,7 @@ name:                   iPad (5th generation)
 screenDensity:          264
 screenX:                1536
 screenY:                2048
-supportedVersionIds[0]: 14.1
-tags[0]:                deprecated=14.1
+supportedVersionIds[0]: 15.4
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -171,8 +170,7 @@ name:                   iPad mini 4
 screenDensity:          326
 screenX:                1536
 screenY:                2048
-supportedVersionIds[0]: 14.1
-tags[0]:                deprecated=14.1
+supportedVersionIds[0]: 15.4
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -244,9 +242,7 @@ screenDensity:          458
 screenX:                1125
 screenY:                2436
 supportedVersionIds[0]: 13.3
-supportedVersionIds[1]: 14.1
-supportedVersionIds[2]: 14.7
-tags[0]:                deprecated=14.1
+supportedVersionIds[1]: 14.7
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -276,13 +272,12 @@ deviceCapabilities[24]: nfc
 deviceCapabilities[25]: sms
 deviceCapabilities[26]: telephony
 formFactor:             PHONE
-id:                     iphone7plus
-name:                   iPhone 7 Plus
-screenDensity:          401
-screenX:                1080
-screenY:                1920
-supportedVersionIds[0]: 14.1
-tags[0]:                deprecated=14.1
+id:                     iphone13pro
+name:                   iPhone 13 Pro
+screenDensity:          460
+screenX:                1170
+screenY:                2532
+supportedVersionIds[0]: 15.2
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -317,13 +312,10 @@ name:                   iPhone 8
 screenDensity:          326
 screenX:                750
 screenY:                1334
-supportedVersionIds[0]: 11.4
-supportedVersionIds[1]: 12.0
-supportedVersionIds[2]: 12.4
-supportedVersionIds[3]: 13.6
-supportedVersionIds[4]: 14.1
-supportedVersionIds[5]: 14.7
-tags[0]:                deprecated=14.1
+supportedVersionIds[0]: 12.4
+supportedVersionIds[1]: 13.6
+supportedVersionIds[2]: 14.7
+tags[0]:                deprecated=12.4
 tags[1]:                default
 ---
 deviceCapabilities[0]:  accelerometer
@@ -360,6 +352,7 @@ screenDensity:          401
 screenX:                1080
 screenY:                1920
 supportedVersionIds[0]: 12.0
+tags[0]:                deprecated=12.0
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -396,6 +389,7 @@ screenX:                828
 screenY:                1792
 supportedVersionIds[0]: 12.4
 supportedVersionIds[1]: 13.2
+tags[0]:                deprecated=12.4
 ---
 deviceCapabilities[0]:  accelerometer
 deviceCapabilities[1]:  arm64
@@ -430,4 +424,5 @@ name:                   iPhone XS Max
 screenDensity:          458
 screenX:                1242
 screenY:                2688
-supportedVersionIds[0]: 12.1`
+supportedVersionIds[0]: 12.1
+tags[0]:                deprecated=12.1`
