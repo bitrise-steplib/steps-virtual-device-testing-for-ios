@@ -1,4 +1,4 @@
-# [BETA] iOS Device Testing
+# iOS Device Testing
 
 [![Step changelog](https://shields.io/github/v/release/bitrise-steplib/steps-virtual-device-testing-for-ios?include_prereleases&label=changelog&color=blueviolet)](https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/releases)
 
