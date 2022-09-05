@@ -328,7 +328,10 @@ func main() {
 				log.TDonef("=> Test finished")
 				fmt.Println()
 
-				log.Infof("Test results:")
+				printStepsStatesToStartTime(stepsToStartTime, stepsToNames)
+				fmt.Println()
+
+				log.TInfof("Test results:")
 				w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
 				if _, err := fmt.Fprintln(w, "Model\tOS version\tOrientation\tLocale\tOutcome\t"); err != nil {
 					failf("Failed to write in writer")
@@ -404,8 +407,6 @@ func main() {
 				time.Sleep(5 * time.Second)
 			}
 		}
-
-		printStepsStatesToStartTime(stepsToStartTime, stepsToNames)
 	}
 
 	if configs.DownloadTestResults == "true" {
@@ -564,7 +565,7 @@ func printStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]ti
 		statesToStartTime := stepsStatesToStartTime[stepID]
 
 		for state, startTime := range statesToStartTime {
-			fmt.Printf("time spent in %s state: %d\n", state, time.Since(startTime)/time.Second)
+			fmt.Printf("time spent in %s state: %ds\n", state, time.Since(startTime)/time.Second)
 		}
 	}
 }
