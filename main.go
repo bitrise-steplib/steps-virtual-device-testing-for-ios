@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -328,7 +329,7 @@ func main() {
 				log.TDonef("=> Test finished")
 				fmt.Println()
 
-				printStepsStatesToStartTime(stepsToStartTime, stepsToNames)
+				printStepsStatesToStartTime(stepsToStartTime, stepsToNames, time.Now(), os.Stdout)
 				fmt.Println()
 
 				log.TInfof("Test results:")
@@ -564,13 +565,37 @@ func createDimensions(step toolresults.Step) map[string]string {
 	return dimensions
 }
 
-func printStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]time.Time, stepsToNames map[string]string) {
+func printStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]time.Time, stepsToNames map[string]string, currentTime time.Time, w io.Writer) {
 	for stepID, stepName := range stepsToNames {
-		fmt.Println(stepName)
+		fmt.Fprintln(w, stepName)
 		statesToStartTime := stepsStatesToStartTime[stepID]
 
-		for state, startTime := range statesToStartTime {
-			fmt.Printf("- time spent in %s state: ~%ds\n", state, time.Since(startTime)/time.Second)
+		var states []string
+		for state := range statesToStartTime {
+			states = append(states, state)
+		}
+
+		sort.Slice(states, func(i, j int) bool {
+			stateI, stateJ := states[i], states[j]
+			startTimeI, startTimeJ := statesToStartTime[stateI], statesToStartTime[stateJ]
+
+			return startTimeI.Before(startTimeJ)
+		})
+
+		for i, state := range states {
+			startTime := statesToStartTime[state]
+
+			var endTime time.Time
+			if i == len(states)-1 {
+				endTime = currentTime
+			} else {
+				nextState := states[i+1]
+				endTime = statesToStartTime[nextState]
+			}
+
+			duration := endTime.Sub(startTime)
+
+			fmt.Fprintf(w, "- time spent in %s state: ~%ds\n", state, duration/time.Second)
 		}
 	}
 }
