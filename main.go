@@ -565,7 +565,7 @@ func printStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]ti
 		statesToStartTime := stepsStatesToStartTime[stepID]
 
 		for state, startTime := range statesToStartTime {
-			fmt.Printf("time spent in %s state: ~%ds\n", state, time.Since(startTime)/time.Second)
+			fmt.Printf("- time spent in %s state: ~%ds\n", state, time.Since(startTime)/time.Second)
 		}
 	}
 }
