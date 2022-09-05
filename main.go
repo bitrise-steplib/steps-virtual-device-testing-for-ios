@@ -338,10 +338,7 @@ func main() {
 				}
 
 				for _, step := range responseModel.Steps {
-					dimensions := map[string]string{}
-					for _, dimension := range step.DimensionValue {
-						dimensions[dimension.Key] = dimension.Value
-					}
+					dimensions := createDimensions(*step)
 
 					outcome := step.Outcome.Summary
 
@@ -559,6 +556,14 @@ func uploadFile(uploadURL string, archiveFilePath string) error {
 	return nil
 }
 
+func createDimensions(step toolresults.Step) map[string]string {
+	dimensions := map[string]string{}
+	for _, dimension := range step.DimensionValue {
+		dimensions[dimension.Key] = dimension.Value
+	}
+	return dimensions
+}
+
 func printStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]time.Time, stepsToNames map[string]string) {
 	for stepID, stepName := range stepsToNames {
 		fmt.Println(stepName)
@@ -570,11 +575,16 @@ func printStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]ti
 	}
 }
 
+func createStepNameWithDimensions(step toolresults.Step) string {
+	dimensions := createDimensions(step)
+	return fmt.Sprintf("%s (%s %s %s %s)", step.Name, dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"])
+}
+
 func updateStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]time.Time, stepsToNames map[string]string, response toolresults.ListStepsResponse) {
 	for _, step := range response.Steps {
 		_, ok := stepsToNames[step.StepId]
 		if !ok {
-			stepsToNames[step.StepId] = step.Name
+			stepsToNames[step.StepId] = createStepNameWithDimensions(*step)
 		}
 
 		statesToStartTime, ok := stepsStatesToStartTime[step.StepId]
