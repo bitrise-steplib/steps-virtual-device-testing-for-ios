@@ -145,7 +145,7 @@ func main() {
 
 	successful := true
 
-	log.Infof("Upload IPAs")
+	log.TInfof("Upload IPAs")
 	{
 		url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
 
@@ -183,11 +183,11 @@ func main() {
 			failf("Failed to upload file(%s) to (%s), error: %s", configs.ZipPath, responseModel.AppURL, err)
 		}
 
-		log.Donef("=> .xctestrun uploaded")
+		log.TDonef("=> .xctestrun uploaded")
 	}
 
 	fmt.Println()
-	log.Infof("Start test")
+	log.TInfof("Start test")
 	{
 		url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
 
@@ -256,14 +256,18 @@ func main() {
 			failf("Failed to start test: %d, error: %s", resp.StatusCode, string(body))
 		}
 
-		log.Donef("=> Test started")
+		log.TDonef("=> Test started")
 	}
 
 	fmt.Println()
-	log.Infof("Waiting for test results")
+	log.TInfof("Waiting for test results")
 	{
 		finished := false
 		printedLogs := []string{}
+
+		stepsToStartTime := map[string]map[string]time.Time{}
+		stepsToNames := map[string]string{}
+
 		for !finished {
 			url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
 
@@ -296,6 +300,8 @@ func main() {
 				failf("Failed to unmarshal response body, error: %s, body: %s", err, string(body))
 			}
 
+			updateStepsStatesToStartTime(stepsToStartTime, stepsToNames, *responseModel)
+
 			finished = true
 			testsRunning := 0
 			for _, step := range responseModel.Steps {
@@ -319,7 +325,7 @@ func main() {
 			}
 
 			if finished {
-				log.Donef("=> Test finished")
+				log.TDonef("=> Test finished")
 				fmt.Println()
 
 				log.Infof("Test results:")
@@ -398,11 +404,13 @@ func main() {
 				time.Sleep(5 * time.Second)
 			}
 		}
+
+		printStepsStatesToStartTime(stepsToStartTime, stepsToNames)
 	}
 
 	if configs.DownloadTestResults == "true" {
 		fmt.Println()
-		log.Infof("Downloading test assets")
+		log.TInfof("Downloading test assets")
 		{
 			url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
 
@@ -443,7 +451,7 @@ func main() {
 				}
 			}
 
-			log.Donef("=> Assets downloaded")
+			log.TDonef("=> Assets downloaded")
 			if err := tools.ExportEnvironmentWithEnvman("VDTESTING_DOWNLOADED_FILES_DIR", tempDir); err != nil {
 				log.Warnf("Failed to export environment (VDTESTING_DOWNLOADED_FILES_DIR), error: %s", err)
 			} else {
@@ -548,4 +556,37 @@ func uploadFile(uploadURL string, archiveFilePath string) error {
 	}
 
 	return nil
+}
+
+func printStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]time.Time, stepsToNames map[string]string) {
+	for stepID, stepName := range stepsToNames {
+		fmt.Println(stepName)
+		statesToStartTime := stepsStatesToStartTime[stepID]
+
+		for state, startTime := range statesToStartTime {
+			fmt.Printf("time spent in %s state: %d\n", state, time.Since(startTime)/time.Second)
+		}
+	}
+}
+
+func updateStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]time.Time, stepsToNames map[string]string, response toolresults.ListStepsResponse) {
+	for _, step := range response.Steps {
+		_, ok := stepsToNames[step.StepId]
+		if !ok {
+			stepsToNames[step.StepId] = step.Name
+		}
+
+		statesToStartTime, ok := stepsStatesToStartTime[step.StepId]
+		if !ok {
+			// Haven't seen this step yet
+			statesToStartTime = map[string]time.Time{}
+			stepsStatesToStartTime[step.StepId] = statesToStartTime
+		}
+
+		_, ok = statesToStartTime[step.State]
+		if !ok {
+			// Haven't seen this state yet -> set state start time
+			statesToStartTime[step.State] = time.Now()
+		}
+	}
 }
