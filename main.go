@@ -69,8 +69,8 @@ func createConfigsModelFromEnvs() ConfigsModel {
 func (configs ConfigsModel) print() {
 	log.Infof("Configs:")
 	log.Printf("- ZipPath: %s", configs.ZipPath)
-
 	log.Printf("- TestTimeout: %s", configs.TestTimeout)
+	log.Printf("- DownloadTestResults: %s", configs.DownloadTestResults)
 	log.Printf("- TestDevices:\n---")
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
 	if _, err := fmt.Fprintln(w, "Model\tOS version\tOrientation\tLocale\t"); err != nil {
