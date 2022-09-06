@@ -69,8 +69,8 @@ func createConfigsModelFromEnvs() ConfigsModel {
 func (configs ConfigsModel) print() {
 	log.Infof("Configs:")
 	log.Printf("- ZipPath: %s", configs.ZipPath)
-
 	log.Printf("- TestTimeout: %s", configs.TestTimeout)
+	log.Printf("- DownloadTestResults: %s", configs.DownloadTestResults)
 	log.Printf("- TestDevices:\n---")
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
 	if _, err := fmt.Fprintln(w, "Model\tOS version\tOrientation\tLocale\t"); err != nil {
@@ -145,7 +145,7 @@ func main() {
 
 	successful := true
 
-	log.Infof("Upload IPAs")
+	log.TInfof("Upload IPAs")
 	{
 		url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
 
@@ -183,11 +183,11 @@ func main() {
 			failf("Failed to upload file(%s) to (%s), error: %s", configs.ZipPath, responseModel.AppURL, err)
 		}
 
-		log.Donef("=> .xctestrun uploaded")
+		log.TDonef("=> .xctestrun uploaded")
 	}
 
 	fmt.Println()
-	log.Infof("Start test")
+	log.TInfof("Start test")
 	{
 		url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
 
@@ -256,14 +256,17 @@ func main() {
 			failf("Failed to start test: %d, error: %s", resp.StatusCode, string(body))
 		}
 
-		log.Donef("=> Test started")
+		log.TDonef("=> Test started")
 	}
 
 	fmt.Println()
-	log.Infof("Waiting for test results")
+	log.TInfof("Waiting for test results")
 	{
 		finished := false
 		printedLogs := []string{}
+
+		stepIDToStepStates := map[string]stepStates{}
+
 		for !finished {
 			url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
 
@@ -296,6 +299,8 @@ func main() {
 				failf("Failed to unmarshal response body, error: %s, body: %s", err, string(body))
 			}
 
+			updateStepsStates(stepIDToStepStates, *responseModel)
+
 			finished = true
 			testsRunning := 0
 			for _, step := range responseModel.Steps {
@@ -319,20 +324,20 @@ func main() {
 			}
 
 			if finished {
-				log.Donef("=> Test finished")
+				log.TDonef("=> Test finished")
 				fmt.Println()
 
-				log.Infof("Test results:")
+				printStepsStates(stepIDToStepStates, time.Now(), os.Stdout)
+				fmt.Println()
+
+				log.TInfof("Test results:")
 				w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
 				if _, err := fmt.Fprintln(w, "Model\tOS version\tOrientation\tLocale\tOutcome\t"); err != nil {
 					failf("Failed to write in writer")
 				}
 
 				for _, step := range responseModel.Steps {
-					dimensions := map[string]string{}
-					for _, dimension := range step.DimensionValue {
-						dimensions[dimension.Key] = dimension.Value
-					}
+					dimensions := createDimensions(*step)
 
 					outcome := step.Outcome.Summary
 
@@ -402,7 +407,7 @@ func main() {
 
 	if configs.DownloadTestResults == "true" {
 		fmt.Println()
-		log.Infof("Downloading test assets")
+		log.TInfof("Downloading test assets")
 		{
 			url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
 
@@ -443,7 +448,7 @@ func main() {
 				}
 			}
 
-			log.Donef("=> Assets downloaded")
+			log.TDonef("=> Assets downloaded")
 			if err := tools.ExportEnvironmentWithEnvman("VDTESTING_DOWNLOADED_FILES_DIR", tempDir); err != nil {
 				log.Warnf("Failed to export environment (VDTESTING_DOWNLOADED_FILES_DIR), error: %s", err)
 			} else {
@@ -548,4 +553,12 @@ func uploadFile(uploadURL string, archiveFilePath string) error {
 	}
 
 	return nil
+}
+
+func createDimensions(step toolresults.Step) map[string]string {
+	dimensions := map[string]string{}
+	for _, dimension := range step.DimensionValue {
+		dimensions[dimension.Key] = dimension.Value
+	}
+	return dimensions
 }
