@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -266,8 +265,7 @@ func main() {
 		finished := false
 		printedLogs := []string{}
 
-		stepsToStartTime := map[string]map[string]time.Time{}
-		stepsToNames := map[string]string{}
+		stepIDToStepStates := map[string]stepStates{}
 
 		for !finished {
 			url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
@@ -301,7 +299,7 @@ func main() {
 				failf("Failed to unmarshal response body, error: %s, body: %s", err, string(body))
 			}
 
-			updateStepsStatesToStartTime(stepsToStartTime, stepsToNames, *responseModel)
+			updateStepsStates(stepIDToStepStates, *responseModel)
 
 			finished = true
 			testsRunning := 0
@@ -329,7 +327,7 @@ func main() {
 				log.TDonef("=> Test finished")
 				fmt.Println()
 
-				printStepsStatesToStartTime(stepsToStartTime, stepsToNames, time.Now(), os.Stdout)
+				printStepsStates(stepIDToStepStates, time.Now(), os.Stdout)
 				fmt.Println()
 
 				log.TInfof("Test results:")
@@ -563,81 +561,4 @@ func createDimensions(step toolresults.Step) map[string]string {
 		dimensions[dimension.Key] = dimension.Value
 	}
 	return dimensions
-}
-
-func printStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]time.Time, stepsToNames map[string]string, currentTime time.Time, w io.Writer) {
-	var stepIDs []string
-	for stepID := range stepsToNames {
-		stepIDs = append(stepIDs, stepID)
-	}
-
-	sort.Strings(stepIDs)
-
-	for _, stepID := range stepIDs {
-		stepName := stepsToNames[stepID]
-		if _, err := fmt.Fprintln(w, stepName); err != nil {
-			fmt.Printf("Failed to print step status durations: %s", err)
-			return
-		}
-
-		statesToStartTime := stepsStatesToStartTime[stepID]
-
-		var states []string
-		for state := range statesToStartTime {
-			states = append(states, state)
-		}
-
-		sort.Slice(states, func(i, j int) bool {
-			stateI, stateJ := states[i], states[j]
-			startTimeI, startTimeJ := statesToStartTime[stateI], statesToStartTime[stateJ]
-
-			return startTimeI.Before(startTimeJ)
-		})
-
-		for i, state := range states {
-			startTime := statesToStartTime[state]
-
-			var endTime time.Time
-			if i == len(states)-1 {
-				endTime = currentTime
-			} else {
-				nextState := states[i+1]
-				endTime = statesToStartTime[nextState]
-			}
-
-			duration := endTime.Sub(startTime)
-
-			if _, err := fmt.Fprintf(w, "- time spent in %s state: ~%s\n", state, duration.Round(time.Second).String()); err != nil {
-				fmt.Printf("Failed to print step status durations: %s", err)
-				return
-			}
-		}
-	}
-}
-
-func createStepNameWithDimensions(step toolresults.Step) string {
-	dimensions := createDimensions(step)
-	return fmt.Sprintf("%s (%s %s %s %s)", step.Name, dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"])
-}
-
-func updateStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]time.Time, stepsToNames map[string]string, response toolresults.ListStepsResponse) {
-	for _, step := range response.Steps {
-		_, ok := stepsToNames[step.StepId]
-		if !ok {
-			stepsToNames[step.StepId] = createStepNameWithDimensions(*step)
-		}
-
-		statesToStartTime, ok := stepsStatesToStartTime[step.StepId]
-		if !ok {
-			// Haven't seen this step yet
-			statesToStartTime = map[string]time.Time{}
-			stepsStatesToStartTime[step.StepId] = statesToStartTime
-		}
-
-		_, ok = statesToStartTime[step.State]
-		if !ok {
-			// Haven't seen this state yet -> set state start time
-			statesToStartTime[step.State] = time.Now()
-		}
-	}
 }
