@@ -566,8 +566,20 @@ func createDimensions(step toolresults.Step) map[string]string {
 }
 
 func printStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]time.Time, stepsToNames map[string]string, currentTime time.Time, w io.Writer) {
-	for stepID, stepName := range stepsToNames {
-		fmt.Fprintln(w, stepName)
+	var stepIDs []string
+	for stepID := range stepsToNames {
+		stepIDs = append(stepIDs, stepID)
+	}
+
+	sort.Strings(stepIDs)
+
+	for _, stepID := range stepIDs {
+		stepName := stepsToNames[stepID]
+		if _, err := fmt.Fprintln(w, stepName); err != nil {
+			fmt.Printf("Failed to print step status durations: %s", err)
+			return
+		}
+
 		statesToStartTime := stepsStatesToStartTime[stepID]
 
 		var states []string
@@ -595,7 +607,10 @@ func printStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]ti
 
 			duration := endTime.Sub(startTime)
 
-			fmt.Fprintf(w, "- time spent in %s state: ~%ds\n", state, duration/time.Second)
+			if _, err := fmt.Fprintf(w, "- time spent in %s state: ~%ds\n", state, duration/time.Second); err != nil {
+				fmt.Printf("Failed to print step status durations: %s", err)
+				return
+			}
 		}
 	}
 }

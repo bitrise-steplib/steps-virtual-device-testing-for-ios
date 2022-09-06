@@ -20,14 +20,20 @@ func Test_printStepsStatesToStartTime(t *testing.T) {
 		{
 			name: "",
 			stepsStatesToStartTime: map[string]map[string]time.Time{
-				"TestID": {
+				"ID_1": {
 					"pending":    testRefTime(),
 					"inProgress": testRefTime().Add(60 * time.Second),
 					"complete":   testRefTime().Add(90 * time.Second),
 				},
+				"ID_2": {
+					"pending":    testRefTime(),
+					"inProgress": testRefTime().Add(40 * time.Second),
+					"complete":   testRefTime().Add(90 * time.Second),
+				},
 			},
 			stepsToNames: map[string]string{
-				"TestID": "iOS Tests",
+				"ID_1": "iOS Tests",
+				"ID_2": "iOS Unit Tests",
 			},
 		},
 	}
@@ -40,6 +46,10 @@ func Test_printStepsStatesToStartTime(t *testing.T) {
 			expected := `iOS Tests
 - time spent in pending state: ~60s
 - time spent in inProgress state: ~30s
+- time spent in complete state: ~0s
+iOS Unit Tests
+- time spent in pending state: ~40s
+- time spent in inProgress state: ~50s
 - time spent in complete state: ~0s
 `
 			if actual != expected {
