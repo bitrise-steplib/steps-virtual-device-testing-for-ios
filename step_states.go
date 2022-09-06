@@ -21,13 +21,51 @@ func newStepStates(step toolresults.Step) stepStates {
 	}
 }
 
-func (i *stepStates) saveState(state string, startTime time.Time) {
-	if _, ok := i.stateToStartTime[state]; ok {
+func (s *stepStates) saveState(state string, startTime time.Time) {
+	if _, ok := s.stateToStartTime[state]; ok {
 		return
 	}
 
 	// Haven't seen this state yet -> set state start time
-	i.stateToStartTime[state] = startTime
+	s.stateToStartTime[state] = startTime
+}
+
+func (s *stepStates) print(currentTime time.Time, w io.Writer) {
+	if _, err := fmt.Fprintln(w, s.name); err != nil {
+		fmt.Printf("Failed to print step status durations: %s", err)
+		return
+	}
+
+	var states []string
+	for state := range s.stateToStartTime {
+		states = append(states, state)
+	}
+
+	sort.Slice(states, func(i, j int) bool {
+		stateI, stateJ := states[i], states[j]
+		startTimeI, startTimeJ := s.stateToStartTime[stateI], s.stateToStartTime[stateJ]
+
+		return startTimeI.Before(startTimeJ)
+	})
+
+	for i, state := range states {
+		startTime := s.stateToStartTime[state]
+
+		var endTime time.Time
+		if i == len(states)-1 {
+			endTime = currentTime
+		} else {
+			nextState := states[i+1]
+			endTime = s.stateToStartTime[nextState]
+		}
+
+		duration := endTime.Sub(startTime)
+
+		if _, err := fmt.Fprintf(w, "- time spent in %s state: ~%s\n", state, duration.Round(time.Second).String()); err != nil {
+			fmt.Printf("Failed to print step status durations: %s", err)
+			return
+		}
+	}
 }
 
 func createStepNameWithDimensions(step toolresults.Step) string {
@@ -57,40 +95,6 @@ func printStepsStates(stepIDtoStates map[string]stepStates, currentTime time.Tim
 
 	for _, stepID := range stepIDs {
 		stepState := stepIDtoStates[stepID]
-		if _, err := fmt.Fprintln(w, stepState.name); err != nil {
-			fmt.Printf("Failed to print step status durations: %s", err)
-			return
-		}
-
-		var states []string
-		for state := range stepState.stateToStartTime {
-			states = append(states, state)
-		}
-
-		sort.Slice(states, func(i, j int) bool {
-			stateI, stateJ := states[i], states[j]
-			startTimeI, startTimeJ := stepState.stateToStartTime[stateI], stepState.stateToStartTime[stateJ]
-
-			return startTimeI.Before(startTimeJ)
-		})
-
-		for i, state := range states {
-			startTime := stepState.stateToStartTime[state]
-
-			var endTime time.Time
-			if i == len(states)-1 {
-				endTime = currentTime
-			} else {
-				nextState := states[i+1]
-				endTime = stepState.stateToStartTime[nextState]
-			}
-
-			duration := endTime.Sub(startTime)
-
-			if _, err := fmt.Fprintf(w, "- time spent in %s state: ~%s\n", state, duration.Round(time.Second).String()); err != nil {
-				fmt.Printf("Failed to print step status durations: %s", err)
-				return
-			}
-		}
+		stepState.print(currentTime, w)
 	}
 }
