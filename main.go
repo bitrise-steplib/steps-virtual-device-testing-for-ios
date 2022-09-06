@@ -607,7 +607,7 @@ func printStepsStatesToStartTime(stepsStatesToStartTime map[string]map[string]ti
 
 			duration := endTime.Sub(startTime)
 
-			if _, err := fmt.Fprintf(w, "- time spent in %s state: ~%ds\n", state, duration/time.Second); err != nil {
+			if _, err := fmt.Fprintf(w, "- time spent in %s state: ~%s\n", state, duration.Round(time.Second).String()); err != nil {
 				fmt.Printf("Failed to print step status durations: %s", err)
 				return
 			}

@@ -44,7 +44,7 @@ func Test_printStepsStatesToStartTime(t *testing.T) {
 
 			actual := b.String()
 			expected := `iOS Tests
-- time spent in pending state: ~60s
+- time spent in pending state: ~1m0s
 - time spent in inProgress state: ~30s
 - time spent in complete state: ~0s
 iOS Unit Tests
