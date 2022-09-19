@@ -83,13 +83,35 @@ inputs:
         │ ipad5       │ iPad (5th generation) │ 15.4           │                          │
         │ ipadmini4   │ iPad mini 4           │ 15.4           │                          │
         │ iphone11    │ iPhone 11             │ 13.3,13.6      │                          │
-        │ iphone11pro │ iPhone 11 Pro         │ 13.3,14.7      │                          │
+        │ iphone11pro │ iPhone 11 Pro         │ 13.3,14.7.     │                          │
         │ iphone13pro │ iPhone 13 Pro         │ 15.2           │                          │
         │ iphone8     │ iPhone 8              │ 12.4,13.6,14.7 │ deprecated=12.4, default │
         │ iphone8plus │ iPhone 8 Plus         │ 12.0           │ deprecated=12.0          │
         │ iphonexr    │ iPhone XR             │ 12.4,13.2      │ deprecated=12.4          │
         │ iphonexsmax │ iPhone XS Max         │ 12.1           │ deprecated=12.1          │
         └─────────────┴───────────────────────┴────────────────┴──────────────────────────┘
+        ```
+        
+        Device and OS Capacity
+        ```
+        ┌─────────────┬───────────────────────┬───────────────┬─────────────────┐
+        │   MODEL_ID  │       MODEL_NAME      │ OS_VERSION_ID │ DEVICE_CAPACITY │
+        ├─────────────┼───────────────────────┼───────────────┼─────────────────┤
+        │ ipad5       │ iPad (5th generation) │ 15.4          │ Low             │
+        │ ipadmini4   │ iPad mini 4           │ 15.4          │ Medium          │
+        │ iphone11    │ iPhone 11             │ 13.3          │ Medium          │
+        │ iphone11    │ iPhone 11             │ 13.6          │ Medium          │
+        │ iphone11pro │ iPhone 11 Pro         │ 13.3          │ Medium          │
+        │ iphone11pro │ iPhone 11 Pro         │ 14.7          │ Medium          │
+        │ iphone13pro │ iPhone 13 Pro         │ 15.2          │ Medium          │
+        │ iphone8     │ iPhone 8              │ 12.4          │ High            │
+        │ iphone8     │ iPhone 8              │ 13.6          │ Medium          │
+        │ iphone8     │ iPhone 8              │ 14.7          │ Medium          │
+        │ iphone8plus │ iPhone 8 Plus         │ 12.0          │ Medium          │
+        │ iphonexr    │ iPhone XR             │ 12.4          │ Medium          │
+        │ iphonexr    │ iPhone XR             │ 13.2          │ Medium          │
+        │ iphonexsmax │ iPhone XS Max         │ 12.1          │ Low             │
+        └─────────────┴───────────────────────┴───────────────┴─────────────────┘
         ```
       summary: |
         Format:
@@ -105,13 +127,35 @@ inputs:
         │ ipad5       │ iPad (5th generation) │ 15.4           │                          │
         │ ipadmini4   │ iPad mini 4           │ 15.4           │                          │
         │ iphone11    │ iPhone 11             │ 13.3,13.6      │                          │
-        │ iphone11pro │ iPhone 11 Pro         │ 13.3,14.7      │                          │
+        │ iphone11pro │ iPhone 11 Pro         │ 13.3,14.7.     │                          │
         │ iphone13pro │ iPhone 13 Pro         │ 15.2           │                          │
         │ iphone8     │ iPhone 8              │ 12.4,13.6,14.7 │ deprecated=12.4, default │
         │ iphone8plus │ iPhone 8 Plus         │ 12.0           │ deprecated=12.0          │
         │ iphonexr    │ iPhone XR             │ 12.4,13.2      │ deprecated=12.4          │
         │ iphonexsmax │ iPhone XS Max         │ 12.1           │ deprecated=12.1          │
         └─────────────┴───────────────────────┴────────────────┴──────────────────────────┘
+        ```
+        
+        Device and OS Capacity
+        ```
+        ┌─────────────┬───────────────────────┬───────────────┬─────────────────┐
+        │   MODEL_ID  │       MODEL_NAME      │ OS_VERSION_ID │ DEVICE_CAPACITY │
+        ├─────────────┼───────────────────────┼───────────────┼─────────────────┤
+        │ ipad5       │ iPad (5th generation) │ 15.4          │ Low             │
+        │ ipadmini4   │ iPad mini 4           │ 15.4          │ Medium          │
+        │ iphone11    │ iPhone 11             │ 13.3          │ Medium          │
+        │ iphone11    │ iPhone 11             │ 13.6          │ Medium          │
+        │ iphone11pro │ iPhone 11 Pro         │ 13.3          │ Medium          │
+        │ iphone11pro │ iPhone 11 Pro         │ 14.7          │ Medium          │
+        │ iphone13pro │ iPhone 13 Pro         │ 15.2          │ Medium          │
+        │ iphone8     │ iPhone 8              │ 12.4          │ High            │
+        │ iphone8     │ iPhone 8              │ 13.6          │ Medium          │
+        │ iphone8     │ iPhone 8              │ 14.7          │ Medium          │
+        │ iphone8plus │ iPhone 8 Plus         │ 12.0          │ Medium          │
+        │ iphonexr    │ iPhone XR             │ 12.4          │ Medium          │
+        │ iphonexr    │ iPhone XR             │ 13.2          │ Medium          │
+        │ iphonexsmax │ iPhone XS Max         │ 12.1          │ Low             │
+        └─────────────┴───────────────────────┴───────────────┴─────────────────┘
         ```
       is_required: true
   - test_timeout: 900
