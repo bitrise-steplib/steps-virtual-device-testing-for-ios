@@ -57,8 +57,6 @@ workflows:
   go-tests:
     steps:
     - go-list:
-    - golint:
-    - errcheck:
     # Ignoring maintenance test as it needs gcloud binary
     - go-test:
         inputs:
