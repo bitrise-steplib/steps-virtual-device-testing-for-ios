@@ -149,45 +149,14 @@ deviceCapabilities[18]:           video-camera
 deviceCapabilities[19]:           wifi
 deviceCapabilities[20]:           arkit
 formFactor:                       TABLET
-id:                               ipad5
-name:                             iPad (5th generation)
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_LOW
-perVersionInfo[0].versionId:      15.4
+id:                               ipad10
+name:                             iPad (10th generation)
+perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
+perVersionInfo[0].versionId:      16.6
 screenDensity:                    264
-screenX:                          1536
-screenY:                          2048
-supportedVersionIds[0]:           15.4
-tags[0]:                          reduced_stability=15.4
----
-deviceCapabilities[0]:            accelerometer
-deviceCapabilities[1]:            arm64
-deviceCapabilities[2]:            armv6
-deviceCapabilities[3]:            armv7
-deviceCapabilities[4]:            auto-focus-camera
-deviceCapabilities[5]:            bluetooth-le
-deviceCapabilities[6]:            front-facing-camera
-deviceCapabilities[7]:            gamekit
-deviceCapabilities[8]:            gyroscope
-deviceCapabilities[9]:            location-services
-deviceCapabilities[10]:           magnetometer
-deviceCapabilities[11]:           metal
-deviceCapabilities[12]:           microphone
-deviceCapabilities[13]:           opengles-1
-deviceCapabilities[14]:           opengles-2
-deviceCapabilities[15]:           opengles-3
-deviceCapabilities[16]:           peer-peer
-deviceCapabilities[17]:           still-camera
-deviceCapabilities[18]:           video-camera
-deviceCapabilities[19]:           wifi
-formFactor:                       TABLET
-id:                               ipadmini4
-name:                             iPad mini 4
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_LOW
-perVersionInfo[0].versionId:      15.4
-screenDensity:                    326
-screenX:                          1536
-screenY:                          2048
-supportedVersionIds[0]:           15.4
+screenX:                          1640
+screenY:                          2360
+supportedVersionIds[0]:           16.6
 ---
 deviceCapabilities[0]:            accelerometer
 deviceCapabilities[1]:            arm64
@@ -222,16 +191,12 @@ name:                             iPhone 11 Pro
 perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
 perVersionInfo[0].versionId:      14.7
 perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_HIGH
-perVersionInfo[1].versionId:      16.5
-perVersionInfo[2].deviceCapacity: DEVICE_CAPACITY_MEDIUM
-perVersionInfo[2].versionId:      16.6
+perVersionInfo[1].versionId:      16.6
 screenDensity:                    458
 screenX:                          1125
 screenY:                          2436
 supportedVersionIds[0]:           14.7
-supportedVersionIds[1]:           16.5
-supportedVersionIds[2]:           16.6
-tags[0]:                          deprecated=16.5
+supportedVersionIds[1]:           16.6
 ---
 deviceCapabilities[0]:            accelerometer
 deviceCapabilities[1]:            arm64
@@ -300,17 +265,16 @@ deviceCapabilities[26]:           telephony
 formFactor:                       PHONE
 id:                               iphone13pro
 name:                             iPhone 13 Pro
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_LOW
-perVersionInfo[0].versionId:      15.2
+perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_HIGH
+perVersionInfo[0].versionId:      15.7
 perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_HIGH
-perVersionInfo[1].versionId:      15.7
+perVersionInfo[1].versionId:      16.6
 screenDensity:                    460
 screenX:                          1170
 screenY:                          2532
-supportedVersionIds[0]:           15.2
-supportedVersionIds[1]:           15.7
-tags[0]:                          reduced_stability=15.2
-tags[1]:                          default
+supportedVersionIds[0]:           15.7
+supportedVersionIds[1]:           16.6
+tags[0]:                          default
 ---
 deviceCapabilities[0]:            accelerometer
 deviceCapabilities[1]:            arm64
@@ -343,15 +307,11 @@ formFactor:                       PHONE
 id:                               iphone14pro
 name:                             iPhone 14 Pro
 perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_HIGH
-perVersionInfo[0].versionId:      16.5
-perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_LOW
-perVersionInfo[1].versionId:      16.6
+perVersionInfo[0].versionId:      16.6
 screenDensity:                    460
 screenX:                          1179
 screenY:                          2556
-supportedVersionIds[0]:           16.5
-supportedVersionIds[1]:           16.6
-tags[0]:                          deprecated=16.5
+supportedVersionIds[0]:           16.6
 ---
 deviceCapabilities[0]:            accelerometer
 deviceCapabilities[1]:            arm64
@@ -385,17 +345,13 @@ id:                               iphone8
 name:                             iPhone 8
 perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
 perVersionInfo[0].versionId:      14.7
-perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_MEDIUM
+perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_HIGH
 perVersionInfo[1].versionId:      15.7
 perVersionInfo[2].deviceCapacity: DEVICE_CAPACITY_HIGH
-perVersionInfo[2].versionId:      16.5
-perVersionInfo[3].deviceCapacity: DEVICE_CAPACITY_MEDIUM
-perVersionInfo[3].versionId:      16.6
+perVersionInfo[2].versionId:      16.6
 screenDensity:                    326
 screenX:                          750
 screenY:                          1334
 supportedVersionIds[0]:           14.7
 supportedVersionIds[1]:           15.7
-supportedVersionIds[2]:           16.5
-supportedVersionIds[3]:           16.6
-tags[0]:                          deprecated=16.5`
+supportedVersionIds[2]:           16.6`
