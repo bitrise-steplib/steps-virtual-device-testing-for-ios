@@ -230,7 +230,7 @@ func main() {
 			msg := ""
 			if len(responseModel.Steps) == 0 {
 				finished = false
-				msg = fmt.Sprintf("- Validating")
+				msg = "- Validating"
 			} else {
 				msg = fmt.Sprintf("- (%d/%d) running", testsRunning, len(responseModel.Steps))
 			}
@@ -308,7 +308,7 @@ func main() {
 						outcome = colorstring.Blue(outcome)
 					}
 
-					if _, err := fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t", dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"], outcome)); err != nil {
+					if _, err := fmt.Fprintln(w, "%s\t%s\t%s\t%s\t%s\t\n", dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"], outcome); err != nil {
 						failf("Failed to write in writer")
 					}
 				}
