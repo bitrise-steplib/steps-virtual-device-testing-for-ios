@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -15,33 +14,31 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/bitrise-io/go-steputils/input"
+	"google.golang.org/api/testing/v1"
+	toolresults "google.golang.org/api/toolresults/v1beta3"
+
 	"github.com/bitrise-io/go-steputils/tools"
+	"github.com/bitrise-io/go-steputils/v2/stepconf"
 	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-io/go-utils/sliceutil"
-	testing "google.golang.org/api/testing/v1"
-	toolresults "google.golang.org/api/toolresults/v1beta3"
-)
-
-const (
-	maxTimeoutSeconds = 2700
+	"github.com/bitrise-io/go-utils/v2/env"
 )
 
 // ConfigsModel ...
 type ConfigsModel struct {
 	// api
-	APIBaseURL string
-	BuildSlug  string
-	AppSlug    string
-	APIToken   string
+	APIBaseURL string          `env:"api_base_url,required"`
+	APIToken   stepconf.Secret `env:"api_token,required"`
+	BuildSlug  string          `env:"BITRISE_BUILD_SLUG,required"`
+	AppSlug    string          `env:"BITRISE_APP_SLUG,required"`
 
 	// shared
-	ZipPath             string
-	TestDevices         string
-	TestTimeout         string
-	DownloadTestResults string
+	ZipPath             string  `env:"zip_path,file"`
+	TestDevices         string  `env:"test_devices,required"`
+	TestTimeout         float64 `env:"test_timeout,range[0..2700]"`
+	DownloadTestResults bool    `env:"download_test_results,opt[false,true]"`
 }
 
 // UploadURLRequest ...
@@ -50,104 +47,28 @@ type UploadURLRequest struct {
 	TestAppURL string `json:"testAppUrl"`
 }
 
-func createConfigsModelFromEnvs() ConfigsModel {
-	return ConfigsModel{
-		// api
-		APIBaseURL: os.Getenv("api_base_url"),
-		BuildSlug:  os.Getenv("BITRISE_BUILD_SLUG"),
-		AppSlug:    os.Getenv("BITRISE_APP_SLUG"),
-		APIToken:   os.Getenv("api_token"),
-
-		// shared
-		ZipPath:             os.Getenv("zip_path"),
-		TestDevices:         os.Getenv("test_devices"),
-		TestTimeout:         os.Getenv("test_timeout"),
-		DownloadTestResults: os.Getenv("download_test_results"),
-	}
-}
-
-func (configs ConfigsModel) print() {
-	log.Infof("Configs:")
-	log.Printf("- ZipPath: %s", configs.ZipPath)
-	log.Printf("- TestTimeout: %s", configs.TestTimeout)
-	log.Printf("- DownloadTestResults: %s", configs.DownloadTestResults)
-	log.Printf("- TestDevices:\n---")
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-	if _, err := fmt.Fprintln(w, "Model\tOS version\tOrientation\tLocale\t"); err != nil {
-		failf("Failed to write in writer")
-	}
-	scanner := bufio.NewScanner(strings.NewReader(configs.TestDevices))
-	for scanner.Scan() {
-		device := scanner.Text()
-		device = strings.TrimSpace(device)
-		if device == "" {
-			continue
-		}
-
-		deviceParams := strings.Split(device, ",")
-
-		if len(deviceParams) != 4 {
-			continue
-		}
-
-		if _, err := fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t", deviceParams[0], deviceParams[1], deviceParams[3], deviceParams[2])); err != nil {
-			failf("Failed to write in writer")
-		}
-	}
-	if err := w.Flush(); err != nil {
-		log.Errorf("Failed to flush writer, error: %s", err)
-	}
-	log.Printf("---")
-}
-
-func (configs ConfigsModel) validate() error {
-	if err := input.ValidateIfNotEmpty(configs.APIBaseURL); err != nil {
-		if _, set := os.LookupEnv("BITRISE_IO"); !set {
-			log.Warnf("Warning: please make sure that Virtual Device Testing add-on is turned on under your app's settings tab.")
-		}
-		return fmt.Errorf("Issue with APIBaseURL: %s", err)
-	}
-	if err := input.ValidateIfNotEmpty(configs.APIToken); err != nil {
-		return fmt.Errorf("Issue with APIToken: %s", err)
-	}
-	if err := input.ValidateIfNotEmpty(configs.BuildSlug); err != nil {
-		return fmt.Errorf("Issue with BuildSlug: %s", err)
-	}
-	if err := input.ValidateIfNotEmpty(configs.AppSlug); err != nil {
-		return fmt.Errorf("Issue with AppSlug: %s", err)
-	}
-	if err := input.ValidateIfNotEmpty(configs.ZipPath); err != nil {
-		return fmt.Errorf("Issue with ZipPath: %s", err)
-	}
-	if err := input.ValidateIfPathExists(configs.ZipPath); err != nil {
-		return fmt.Errorf("Issue with ZipPath: %s", err)
-	}
-
-	return nil
-}
-
 func failf(f string, v ...interface{}) {
 	log.Errorf(f, v...)
 	os.Exit(1)
 }
 
 func main() {
-	configs := createConfigsModelFromEnvs()
+	envRepository := env.NewRepository()
+	inputParser := stepconf.NewInputParser(envRepository)
 
-	fmt.Println()
-	configs.print()
-
-	if err := configs.validate(); err != nil {
-		failf("%s", err)
+	var configs ConfigsModel
+	if err := inputParser.Parse(&configs); err != nil {
+		failf("Process config: couldn't create step config: %v\n", err)
 	}
 
+	stepconf.Print(configs)
 	fmt.Println()
 
 	successful := true
 
 	log.TInfof("Upload IPAs")
 	{
-		url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
+		url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
 
 		req, err := http.NewRequest("POST", url, nil)
 		if err != nil {
@@ -161,14 +82,14 @@ func main() {
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				failf("Failed to read response body, error: %s", err)
 			}
 			failf("Failed to start test: %d, error: %s", resp.StatusCode, string(body))
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			failf("Failed to read response body, error: %s", err)
 		}
@@ -189,7 +110,7 @@ func main() {
 	fmt.Println()
 	log.TInfof("Start test")
 	{
-		url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
+		url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
 
 		testModel := &testing.TestMatrix{}
 		testModel.EnvironmentMatrix = &testing.EnvironmentMatrix{IosDeviceList: &testing.IosDeviceList{}}
@@ -218,16 +139,8 @@ func main() {
 			testModel.EnvironmentMatrix.IosDeviceList.IosDevices = append(testModel.EnvironmentMatrix.IosDeviceList.IosDevices, &newDevice)
 		}
 
-		timeout := configs.TestTimeout
-		if val, err := strconv.ParseFloat(timeout, 64); err != nil {
-			failf("could not parse float from timeout value (%s): %s", timeout, err)
-		} else if val > float64(maxTimeoutSeconds) {
-			log.Warnf("timeout value (%f) is greater than available maximum (%f). Maximum will be used instead.", val, maxTimeoutSeconds)
-			timeout = strconv.Itoa(maxTimeoutSeconds)
-		}
-
 		testModel.TestSpecification = &testing.TestSpecification{
-			TestTimeout: fmt.Sprintf("%ss", timeout),
+			TestTimeout: fmt.Sprintf("%f", configs.TestTimeout),
 		}
 
 		testModel.TestSpecification.IosXcTest = &testing.IosXcTest{}
@@ -249,7 +162,7 @@ func main() {
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				failf("Failed to read response body, error: %s", err)
 			}
@@ -268,7 +181,7 @@ func main() {
 		stepIDToStepStates := map[string]stepStates{}
 
 		for !finished {
-			url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
+			url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
 
 			req, err := http.NewRequest("GET", url, nil)
 			if err != nil {
@@ -277,14 +190,18 @@ func main() {
 
 			client := &http.Client{}
 			resp, err := client.Do(req)
-			if resp.StatusCode != http.StatusOK || err != nil {
+			if err != nil || (resp != nil && resp.StatusCode != http.StatusOK) {
 				resp, err = client.Do(req)
 				if err != nil {
 					failf("Failed to get http response, error: %s", err)
 				}
 			}
 
-			body, err := ioutil.ReadAll(resp.Body)
+			if resp == nil || resp.Body == nil {
+				failf("Failed to get http response, response body is nil")
+			}
+
+			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				failf("Failed to read response body, error: %s", err)
 			}
@@ -405,11 +322,11 @@ func main() {
 		}
 	}
 
-	if configs.DownloadTestResults == "true" {
+	if configs.DownloadTestResults {
 		fmt.Println()
 		log.TInfof("Downloading test assets")
 		{
-			url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + configs.APIToken
+			url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
 
 			req, err := http.NewRequest("GET", url, nil)
 			if err != nil {
@@ -426,7 +343,7 @@ func main() {
 				failf("Failed to get http response, status code: %d", resp.StatusCode)
 			}
 
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				failf("Failed to read response body, error: %s", err)
 			}
@@ -543,7 +460,7 @@ func uploadFile(uploadURL string, archiveFilePath string) error {
 		}
 	}()
 
-	_, err = ioutil.ReadAll(resp.Body)
+	_, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("Failed to read response: %s", err)
 	}
