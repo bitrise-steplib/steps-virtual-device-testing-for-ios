@@ -308,7 +308,7 @@ func main() {
 						outcome = colorstring.Blue(outcome)
 					}
 
-					if _, err := fmt.Fprintln(w, "%s\t%s\t%s\t%s\t%s\t\n", dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"], outcome); err != nil {
+					if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t\n", dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"], outcome); err != nil {
 						failf("Failed to write in writer")
 					}
 				}
