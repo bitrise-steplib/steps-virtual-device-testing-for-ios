@@ -28,12 +28,14 @@ workflows:
         - repository_url: https://github.com/bitrise-io/sample-swift-project-with-parallel-ui-test.git
         - branch: master
         - clone_into_dir: ./
-    - certificate-and-profile-installer: { }
     - xcode-build-for-test:
         inputs:
         - project_path: ./BullsEye.xcworkspace
         - scheme: BullsEye
         - output_tool: xcodebuild
+        - automatic_code_signing: api-key
+        - certificate_url_list: $BITRISE_DEFAULT_CERTIFICATE_URL
+        - passphrase_list: $BITRISE_DEFAULT_CERTIFICATE_PASSPHRASE
     - path::./:
         inputs:
         - download_test_results: "true"
