@@ -140,7 +140,7 @@ func main() {
 		}
 
 		testModel.TestSpecification = &testing.TestSpecification{
-			TestTimeout: fmt.Sprintf("%f", configs.TestTimeout),
+			TestTimeout: fmt.Sprintf("%fs", configs.TestTimeout),
 		}
 
 		testModel.TestSpecification.IosXcTest = &testing.IosXcTest{}
