@@ -25,14 +25,14 @@ workflows:
         - is_create_path: true
     - git::https://github.com/bitrise-steplib/bitrise-step-simple-git-clone.git:
         inputs:
-        - repository_url: https://github.com/bitrise-samples/sample-apps-ios-simple-objc-with-uitest.git
-        - branch: renamed-scheme
+        - repository_url: https://github.com/bitrise-io/sample-swift-project-with-parallel-ui-test.git
+        - branch: master
         - clone_into_dir: ./
     - certificate-and-profile-installer: { }
     - xcode-build-for-test:
         inputs:
-        - project_path: ./ios-simple-objc/ios-simple-objc.xcodeproj
-        - scheme: renamed_scheme
+        - project_path: ./BullsEye.xcworkspace
+        - scheme: BullsEye
         - output_tool: xcodebuild
     - path::./:
         inputs:
