@@ -23,18 +23,16 @@ workflows:
         inputs:
         - path: $BITRISE_SOURCE_DIR/_tmp
         - is_create_path: true
-    - script:
+    - git::https://github.com/bitrise-steplib/bitrise-step-simple-git-clone.git:
         inputs:
-        - content: |-
-            #!/bin/bash
-            set -ev
-            git clone $SAMPLE_APP_URL .
-            git checkout $SAMPLE_APP_BRANCH
+        - repository_url: https://github.com/bitrise-samples/sample-apps-ios-simple-objc-with-uitest.git
+        - branch: renamed-scheme
+        - clone_into_dir: ./
     - certificate-and-profile-installer: { }
     - xcode-build-for-test:
         inputs:
         - project_path: ./ios-simple-objc/ios-simple-objc.xcodeproj
-        - scheme: ios-simple-objc
+        - scheme: renamed_scheme
         - output_tool: xcodebuild
     - path::./:
         inputs:
