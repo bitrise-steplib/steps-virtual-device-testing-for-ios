@@ -34,8 +34,8 @@ workflows:
         - scheme: BullsEye
         - output_tool: xcodebuild
         - automatic_code_signing: api-key
-        - certificate_url_list: $BITRISE_DEFAULT_CERTIFICATE_URL
-        - passphrase_list: $BITRISE_DEFAULT_CERTIFICATE_PASSPHRASE
+        - certificate_url_list: $BITRISE_CERTIFICATE_URL
+        - passphrase_list: $BITRISE_CERTIFICATE_PASSPHRASE
     - path::./:
         inputs:
         - download_test_results: "true"
