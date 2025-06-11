@@ -35,10 +35,11 @@ type ConfigsModel struct {
 	AppSlug    string          `env:"BITRISE_APP_SLUG,required"`
 
 	// shared
-	ZipPath             string  `env:"zip_path,file"`
-	TestDevices         string  `env:"test_devices,required"`
-	TestTimeout         float64 `env:"test_timeout,range[0..2700]"`
-	DownloadTestResults bool    `env:"download_test_results,opt[false,true]"`
+	ZipPath              string  `env:"zip_path,file"`
+	TestDevices          string  `env:"test_devices,required"`
+	TestTimeout          float64 `env:"test_timeout,range[0..2700]"`
+	DownloadTestResults  bool    `env:"download_test_results,opt[false,true]"`
+	NumFlakyTestAttempts int     `env:"num_flaky_test_attempts,range[0..10]"`
 }
 
 // UploadURLRequest ...
@@ -115,6 +116,7 @@ func main() {
 		testModel := &testing.TestMatrix{}
 		testModel.EnvironmentMatrix = &testing.EnvironmentMatrix{IosDeviceList: &testing.IosDeviceList{}}
 		testModel.EnvironmentMatrix.IosDeviceList.IosDevices = []*testing.IosDevice{}
+		testModel.FlakyTestAttempts = int64(configs.NumFlakyTestAttempts)
 
 		scanner := bufio.NewScanner(strings.NewReader(configs.TestDevices))
 		for scanner.Scan() {

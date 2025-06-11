@@ -32,7 +32,7 @@ workflows:
         inputs:
         - project_path: ./BullsEye.xcworkspace
         - scheme: BullsEye
-        - test_plan: FullTests
+        - test_plan: FailingTests
         - output_tool: xcodebuild
         - automatic_code_signing: api-key
         - certificate_url_list: $BITRISE_CERTIFICATE_URL
@@ -40,6 +40,7 @@ workflows:
     - path::./:
         inputs:
         - download_test_results: "true"
+        - num_flaky_test_attempts: 2
     - script:
         title: Output check
         inputs:
