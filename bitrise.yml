@@ -32,7 +32,7 @@ workflows:
         inputs:
         - project_path: ./BullsEye.xcworkspace
         - scheme: BullsEye
-        - destination: 'platform=iOS,name=iPhone 13 Pro,OS=16.6'
+        - destination: platform=iOS,name=iPhone 13 Pro,OS=16.6
         - output_tool: xcodebuild
         - automatic_code_signing: api-key
         - certificate_url_list: $BITRISE_CERTIFICATE_URL
