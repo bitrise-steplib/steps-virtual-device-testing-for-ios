@@ -33,6 +33,7 @@ workflows:
         - project_path: ./BullsEye.xcworkspace
         - scheme: BullsEye
         - destination: generic/platform=iOS,OS=16.6
+        - xcodebuild_options: -sdk iphoneos
         - output_tool: xcodebuild
         - automatic_code_signing: api-key
         - certificate_url_list: $BITRISE_CERTIFICATE_URL
