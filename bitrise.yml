@@ -40,6 +40,7 @@ workflows:
     - path::./:
         inputs:
         - download_test_results: "true"
+        - num_flaky_test_attempts: 2
     - script:
         title: Output check
         inputs:
