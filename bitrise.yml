@@ -1,4 +1,4 @@
-format_version: 5
+format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 app:
@@ -8,10 +8,8 @@ app:
 
 workflows:
   test:
-    before_run:
-    - audit-this-step
-    - go-tests
     steps:
+    - git::https://github.com/bitrise-steplib/steps-check.git: { }
     - script:
         inputs:
         - content: |-
@@ -23,21 +21,22 @@ workflows:
         title: Switch working dir to _tmp dir
         run_if: true
         inputs:
-        - path: "$BITRISE_SOURCE_DIR/_tmp"
+        - path: $BITRISE_SOURCE_DIR/_tmp
         - is_create_path: true
-    - script:
+    - git::https://github.com/bitrise-steplib/bitrise-step-simple-git-clone.git:
         inputs:
-        - content: |-
-            #!/bin/bash
-            set -ev
-            git clone $SAMPLE_APP_URL .
-            git checkout $SAMPLE_APP_BRANCH
-    - certificate-and-profile-installer:
+        - repository_url: https://github.com/bitrise-io/sample-swift-project-with-parallel-ui-test.git
+        - branch: master
+        - clone_into_dir: ./
     - xcode-build-for-test:
         inputs:
-        - project_path: ./ios-simple-objc/ios-simple-objc.xcodeproj
-        - scheme: ios-simple-objc
+        - project_path: ./BullsEye.xcworkspace
+        - scheme: BullsEye
+        - test_plan: FullTests
         - output_tool: xcodebuild
+        - automatic_code_signing: api-key
+        - certificate_url_list: $BITRISE_CERTIFICATE_URL
+        - passphrase_list: $BITRISE_CERTIFICATE_PASSPHRASE
     - path::./:
         inputs:
         - download_test_results: "true"
@@ -54,49 +53,11 @@ workflows:
               echo "VDTESTING_DOWNLOADED_FILES_DIR: $VDTESTING_DOWNLOADED_FILES_DIR"
             fi
 
-  go-tests:
-    steps:
-    - go-list:
-    # Ignoring maintenance test as it needs gcloud binary
-    - go-test:
-        inputs:
-          - packages: "."
-
   maintenance:
     steps:
     - go-test:
         inputs:
-          - packages: "./maintenance"
-
-  # ----------------------------------------------------------------
-  # --- Utility workflows
-  dep-update:
-    title: Godeps update
-    description: |
-      Used for updating bitrise dependencies with godep
-    steps:
-    - script:
-        title: Dependency update
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            go get -u -v github.com/bitrise-tools/gows
-            go get -u -v github.com/golang/dep/cmd/dep
-            gows clear
-            gows dep ensure -v
-            gows dep ensure -v -update
-
-  # ----------------------------------------------------------------
-  # --- workflows to Share this step into a Step Library
-  audit-this-step:
-    steps:
-    - script:
-        inputs:
-        - content: |-
-            #!/bin/bash
-            set -ex
-            stepman audit --step-yml ./step.yml
+        - packages: ./maintenance
 
   generate_readme:
     steps:
