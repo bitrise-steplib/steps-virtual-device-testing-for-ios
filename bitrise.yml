@@ -55,7 +55,7 @@ workflows:
             fi
     - deploy-to-bitrise-io@2:
         inputs:
-        - deploy_path: "$VDTESTING_DOWNLOADED_FILES_DIR"
+        - deploy_path: $VDTESTING_DOWNLOADED_FILES_DIR
 
   maintenance:
     steps:
