@@ -105,8 +105,11 @@ func signIn() error {
 		"--project", servAcc.ProjectID)
 
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
+	if err != nil {
+		return fmt.Errorf("out: %s, err: %w", out, err)
+	}
 
-	return fmt.Errorf("out: %s, err: %w", out, err)
+	return nil
 }
 
 func checkAccounts() (bool, error) {
