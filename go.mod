@@ -7,6 +7,7 @@ require (
 	github.com/bitrise-io/go-utils v1.0.13
 	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.25
 	github.com/bitrise-steplib/steps-deploy-to-bitrise-io v0.0.0-20250728133502-5ac534b2874f
+	github.com/ryanuber/go-glob v1.0.0
 	google.golang.org/api v0.83.0
 )
 

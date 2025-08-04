@@ -28,6 +28,7 @@ import (
 	logv2 "github.com/bitrise-io/go-utils/v2/log"
 	"github.com/bitrise-steplib/steps-deploy-to-bitrise-io/test/converters/junitxml"
 	"github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/output"
+	"github.com/ryanuber/go-glob"
 )
 
 // ConfigsModel ...
@@ -370,7 +371,8 @@ func main() {
 				failf("Failed to create temp dir, error: %s", err)
 			}
 
-			testResultXmlPth := ""
+			mergedTestResultXmlPth := ""
+			singleTestResultXmlPth := ""
 			for fileName, fileURL := range responseModel {
 				pth := filepath.Join(tempDir, fileName)
 				if err := downloadFile(fileURL, pth); err != nil {
@@ -378,15 +380,25 @@ func main() {
 				}
 
 				// per test run results: iphone13pro-16.6-en-portrait_test_result_0.xml
+				if glob.Glob("*test_result_*.xml", pth) {
+					singleTestResultXmlPth = pth
+				}
+
 				// merged result: iphone13pro-16.6-en-portrait-test_results_merged.xml
 				if strings.HasPrefix(fileName, "test_results_merged.xml") {
-					if testResultXmlPth != "" {
+					if mergedTestResultXmlPth != "" {
 						log.Warnf("Multiple merged test results XML files found, using the last one: %s", pth)
 					} else {
 						log.Printf("Merged test results XML found: %s", pth)
 					}
-					testResultXmlPth = pth
+					mergedTestResultXmlPth = pth
 				}
+			}
+
+			testResultXmlPth := mergedTestResultXmlPth
+			if testResultXmlPth == "" && singleTestResultXmlPth != "" {
+				log.Warnf("No merged test results XML found, using the latest single test result XML: %s", singleTestResultXmlPth)
+				testResultXmlPth = singleTestResultXmlPth
 			}
 
 			log.Printf("Merged test results XML: %s", testResultXmlPth)
@@ -395,7 +407,7 @@ func main() {
 			if err := outputExporter.ExportTestResultsDir(tempDir); err != nil {
 				log.Warnf("Failed to export test assets: %s", err)
 			} else {
-				if err := outputExporter.ExportFlakyTestsEnvVar(""); err != nil {
+				if err := outputExporter.ExportFlakyTestsEnvVar(testResultXmlPth); err != nil {
 					log.Warnf("Failed to export flaky tests env var: %s", err)
 				}
 			}
