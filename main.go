@@ -380,6 +380,11 @@ func main() {
 				// per test run results: iphone13pro-16.6-en-portrait_test_result_0.xml
 				// merged result: iphone13pro-16.6-en-portrait-test_results_merged.xml
 				if strings.HasPrefix(fileName, "test_results_merged.xml") {
+					if testResultXmlPth != "" {
+						log.Warnf("Multiple merged test results XML files found, using the last one: %s", pth)
+					} else {
+						log.Printf("Merged test results XML found: %s", pth)
+					}
 					testResultXmlPth = pth
 				}
 			}
