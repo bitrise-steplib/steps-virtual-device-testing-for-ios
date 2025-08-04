@@ -99,13 +99,13 @@ inputs:
       ├─────────────┼────────────────────────┼───────────────┼─────────────────┤
       │ ipad10      │ iPad (10th generation) │ 16.6          │ Low             │
       │ iphone11pro │ iPhone 11 Pro          │ 16.6          │ High            │
-      │ iphone13pro │ iPhone 13 Pro          │ 15.7          │ Medium          │
+      │ iphone13pro │ iPhone 13 Pro          │ 15.7          │ High            │
       │ iphone13pro │ iPhone 13 Pro          │ 16.6          │ High            │
       │ iphone14pro │ iPhone 14 Pro          │ 16.6          │ High            │
-      │ iphone15    │ iPhone 15              │ 18.0          │ Low             │
+      │ iphone15    │ iPhone 15              │ 18.0          │ Medium          │
       │ iphone15pro │ iPhone 15 Pro          │ 18.0          │ Medium          │
       │ iphone8     │ iPhone 8               │ 15.7          │ Medium          │
-      │ iphone8     │ iPhone 8               │ 16.6          │ Medium          │
+      │ iphone8     │ iPhone 8               │ 16.6          │ High            │
       └─────────────┴────────────────────────┴───────────────┴─────────────────┘
       ```
     summary: |
@@ -136,13 +136,13 @@ inputs:
       ├─────────────┼────────────────────────┼───────────────┼─────────────────┤
       │ ipad10      │ iPad (10th generation) │ 16.6          │ Low             │
       │ iphone11pro │ iPhone 11 Pro          │ 16.6          │ High            │
-      │ iphone13pro │ iPhone 13 Pro          │ 15.7          │ Medium          │
+      │ iphone13pro │ iPhone 13 Pro          │ 15.7          │ High            │
       │ iphone13pro │ iPhone 13 Pro          │ 16.6          │ High            │
       │ iphone14pro │ iPhone 14 Pro          │ 16.6          │ High            │
-      │ iphone15    │ iPhone 15              │ 18.0          │ Low             │
+      │ iphone15    │ iPhone 15              │ 18.0          │ Medium          │
       │ iphone15pro │ iPhone 15 Pro          │ 18.0          │ Medium          │
       │ iphone8     │ iPhone 8               │ 15.7          │ Medium          │
-      │ iphone8     │ iPhone 8               │ 16.6          │ Medium          │
+      │ iphone8     │ iPhone 8               │ 16.6          │ High            │
       └─────────────┴────────────────────────┴───────────────┴─────────────────┘
       ```
     is_required: true

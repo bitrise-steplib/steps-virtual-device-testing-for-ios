@@ -225,7 +225,7 @@ deviceCapabilities[26]:           telephony
 formFactor:                       PHONE
 id:                               iphone13pro
 name:                             iPhone 13 Pro
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
+perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_HIGH
 perVersionInfo[0].versionId:      15.7
 perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_HIGH
 perVersionInfo[1].versionId:      16.6
@@ -303,7 +303,7 @@ deviceCapabilities[26]:           telephony
 formFactor:                       PHONE
 id:                               iphone15
 name:                             iPhone 15
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_LOW
+perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
 perVersionInfo[0].versionId:      18.0
 screenDensity:                    460
 screenX:                          1170
@@ -381,7 +381,7 @@ id:                               iphone8
 name:                             iPhone 8
 perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
 perVersionInfo[0].versionId:      15.7
-perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_MEDIUM
+perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_HIGH
 perVersionInfo[1].versionId:      16.6
 screenDensity:                    326
 screenX:                          750
