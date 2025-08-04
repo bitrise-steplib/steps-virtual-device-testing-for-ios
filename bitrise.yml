@@ -55,6 +55,7 @@ workflows:
             fi
     - deploy-to-bitrise-io@2:
         inputs:
+        - is_compress: "true"
         - deploy_path: $VDTESTING_DOWNLOADED_FILES_DIR
 
   maintenance:
