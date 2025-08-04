@@ -11,7 +11,6 @@ import (
 	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-io/go-utils/pathutil"
-	"github.com/pkg/errors"
 )
 
 func TestDeviceList(t *testing.T) {
@@ -36,7 +35,7 @@ func checkDeviceList() error {
 
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		return errors.Wrap(err, out)
+		return fmt.Errorf("out: %s, err: %w", out, err)
 	}
 
 	if out == deviceList {
@@ -47,7 +46,7 @@ func checkDeviceList() error {
 
 	outFormatted, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		return errors.Wrap(err, out)
+		return fmt.Errorf("out: %s, err: %w", out, err)
 	}
 
 	// Your gcloud sdk version must be 417.0.0 or greater for this command to succeed.
@@ -55,7 +54,7 @@ func checkDeviceList() error {
 
 	capacityFormatted, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		return errors.Wrap(err, out)
+		return fmt.Errorf("out: %s, err: %w", out, err)
 	}
 
 	fmt.Println("Fresh devices list to use in this maintenance test:")
@@ -107,7 +106,7 @@ func signIn() error {
 
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 
-	return errors.Wrap(err, out)
+	return fmt.Errorf("out: %s, err: %w", out, err)
 }
 
 func checkAccounts() (bool, error) {
