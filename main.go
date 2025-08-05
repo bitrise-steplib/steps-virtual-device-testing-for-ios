@@ -387,9 +387,9 @@ func main() {
 				// merged result: iphone13pro-16.6-en-portrait-test_results_merged.xml
 				if strings.HasPrefix(fileName, "test_results_merged.xml") {
 					if mergedTestResultXmlPth != "" {
-						log.Warnf("Multiple merged test results XML files found, using the last one: %s", pth)
+						log.TWarnf("Multiple merged test results XML files found, using the last one: %s", pth)
 					} else {
-						log.Printf("Merged test results XML found: %s", pth)
+						log.TPrintf("Merged test results XML found: %s", pth)
 					}
 					mergedTestResultXmlPth = pth
 				}
@@ -397,18 +397,18 @@ func main() {
 
 			testResultXmlPth := mergedTestResultXmlPth
 			if testResultXmlPth == "" && singleTestResultXmlPth != "" {
-				log.Warnf("No merged test results XML found, using the latest single test result XML: %s", singleTestResultXmlPth)
+				log.TWarnf("No merged test results XML found, using the latest single test result XML: %s", singleTestResultXmlPth)
 				testResultXmlPth = singleTestResultXmlPth
 			}
 
-			log.Printf("Merged test results XML: %s", testResultXmlPth)
+			log.TPrintf("Test results XML: %s", testResultXmlPth)
 			log.TDonef("=> %d Test Assets downloaded", len(responseModel))
 
 			if err := outputExporter.ExportTestResultsDir(tempDir); err != nil {
-				log.Warnf("Failed to export test assets: %s", err)
-			} else {
+				log.TWarnf("Failed to export test assets: %s", err)
+			} else if testResultXmlPth != "" {
 				if err := outputExporter.ExportFlakyTestsEnvVar(testResultXmlPth); err != nil {
-					log.Warnf("Failed to export flaky tests env var: %s", err)
+					log.TWarnf("Failed to export flaky tests env var: %s", err)
 				}
 			}
 		}

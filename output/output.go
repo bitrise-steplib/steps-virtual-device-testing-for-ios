@@ -16,7 +16,7 @@ const (
 
 type Exporter interface {
 	ExportTestResultsDir(dir string) error
-	ExportFlakyTestsEnvVar(testResultXML string) error
+	ExportFlakyTestsEnvVar(testResultXMLPth string) error
 }
 
 type exporter struct {
@@ -41,10 +41,10 @@ func (e exporter) ExportTestResultsDir(dir string) error {
 	return nil
 }
 
-func (e exporter) ExportFlakyTestsEnvVar(testResultXML string) error {
-	testReport, err := e.convertTestReport(testResultXML)
+func (e exporter) ExportFlakyTestsEnvVar(testResultXMLPth string) error {
+	testReport, err := e.convertTestReport(testResultXMLPth)
 	if err != nil {
-		return fmt.Errorf("failed to convert test report (%s): %w", testResultXML, err)
+		return fmt.Errorf("failed to convert test report (%s): %w", testResultXMLPth, err)
 	}
 
 	flakyTestSuites := e.getFlakyTestSuites(testReport)
@@ -140,7 +140,7 @@ func (e exporter) exportFlakyTestCasesEnvVar(flakyTestSuites []testreport.TestSu
 	}
 
 	if len(flakyTestCases) > 0 {
-		e.logger.Donef("%d flaky test case(s) detected, exporting %s env var", len(flakyTestCases), flakyTestCasesEnvVarKey)
+		e.logger.TDonef("%d flaky test case(s) detected, exporting %s env var", len(flakyTestCases), flakyTestCasesEnvVarKey)
 	}
 
 	var flakyTestCasesMessage string
@@ -148,7 +148,7 @@ func (e exporter) exportFlakyTestCasesEnvVar(flakyTestSuites []testreport.TestSu
 		flakyTestCasesMessageLine := fmt.Sprintf("- %s\n", flakyTestCase)
 
 		if len(flakyTestCasesMessage)+len(flakyTestCasesMessageLine) > flakyTestCasesEnvVarSizeLimitInBytes {
-			e.logger.Warnf("%s env var size limit (%d characters) exceeded. Skipping %d test cases.", flakyTestCasesEnvVarKey, flakyTestCasesEnvVarSizeLimitInBytes, len(flakyTestCases)-i)
+			e.logger.TWarnf("%s env var size limit (%d characters) exceeded. Skipping %d test cases.", flakyTestCasesEnvVarKey, flakyTestCasesEnvVarSizeLimitInBytes, len(flakyTestCases)-i)
 			break
 		}
 
