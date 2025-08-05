@@ -3,7 +3,6 @@ package output
 import (
 	"fmt"
 
-	"github.com/bitrise-io/go-steputils/v2/export"
 	"github.com/bitrise-io/go-utils/v2/log"
 	"github.com/bitrise-steplib/steps-deploy-to-bitrise-io/test/converters/junitxml"
 	"github.com/bitrise-steplib/steps-deploy-to-bitrise-io/test/testreport"
@@ -20,12 +19,12 @@ type Exporter interface {
 }
 
 type exporter struct {
-	outputExporter export.Exporter
+	outputExporter OutputExporter
 	converter      junitxml.Converter
 	logger         log.Logger
 }
 
-func NewExporter(outputExporter export.Exporter, converter junitxml.Converter, logger log.Logger) Exporter {
+func NewExporter(outputExporter OutputExporter, converter junitxml.Converter, logger log.Logger) Exporter {
 	return &exporter{
 		outputExporter: outputExporter,
 		converter:      converter,

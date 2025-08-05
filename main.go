@@ -17,13 +17,11 @@ import (
 	"google.golang.org/api/testing/v1"
 	toolresults "google.golang.org/api/toolresults/v1beta3"
 
-	"github.com/bitrise-io/go-steputils/v2/export"
 	"github.com/bitrise-io/go-steputils/v2/stepconf"
 	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-io/go-utils/sliceutil"
-	"github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-utils/v2/env"
 	logv2 "github.com/bitrise-io/go-utils/v2/log"
 	"github.com/bitrise-steplib/steps-deploy-to-bitrise-io/test/converters/junitxml"
@@ -61,11 +59,8 @@ func failf(f string, v ...interface{}) {
 func main() {
 	envRepository := env.NewRepository()
 	inputParser := stepconf.NewInputParser(envRepository)
-	cmdFactory := command.NewFactory(envRepository)
-	exporter := export.NewExporter(cmdFactory)
-	converter := junitxml.Converter{}
 	logger := logv2.NewLogger()
-	outputExporter := output.NewExporter(exporter, converter, logger)
+	outputExporter := output.NewExporter(output.NewOutputExporter(), junitxml.Converter{}, logger)
 
 	var configs ConfigsModel
 	if err := inputParser.Parse(&configs); err != nil {
@@ -385,7 +380,7 @@ func main() {
 				}
 
 				// merged result: iphone13pro-16.6-en-portrait-test_results_merged.xml
-				if strings.HasPrefix(fileName, "test_results_merged.xml") {
+				if strings.HasSuffix(fileName, "test_results_merged.xml") {
 					if mergedTestResultXmlPth != "" {
 						log.TWarnf("Multiple merged test results XML files found, using the last one: %s", pth)
 					} else {
