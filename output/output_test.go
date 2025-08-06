@@ -149,7 +149,7 @@ func Test_exporter_ExportFlakyTestsEnvVar(t *testing.T) {
 					},
 				},
 			},
-			wantFlakyTestsEnvValue: fmt.Sprintf("- Suite1.com.example.TestClass1.testMethod1\n"),
+			wantFlakyTestsEnvValue: "- Suite1.com.example.TestClass1.testMethod1\n",
 		},
 		{
 			name: "Flaky test cases env var size is limited",
