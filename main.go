@@ -402,8 +402,9 @@ func (s VDTForIosStep) waitForTestResult(configs ConfigsModel) (bool, error) {
 
 			for _, step := range responseModel.Steps {
 				dimensions := createDimensions(*step)
-
 				outcome := step.Outcome.Summary
+
+				fmt.Printf("%s: %s", dimensions, outcome)
 
 				switch outcome {
 				case "success":
