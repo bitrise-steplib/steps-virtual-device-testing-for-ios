@@ -407,6 +407,7 @@ func (s VDTForIosStep) waitForTestResult(configs ConfigsModel) (bool, error) {
 
 				switch outcome {
 				case "success":
+					successful = true
 					outcome = colorstring.Green(outcome)
 				case "failure":
 					successful = false
