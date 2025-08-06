@@ -109,266 +109,28 @@ func (s VDTForIosStep) ProcessInputs() (ConfigsModel, error) {
 }
 
 func (s VDTForIosStep) Run(configs ConfigsModel) (bool, error) {
-	successful := true
 
 	log.TInfof("Upload IPAs")
-	{
-		url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
-
-		req, err := http.NewRequest("POST", url, nil)
-		if err != nil {
-			return false, fmt.Errorf("failed to create http request, error: %s", err)
-		}
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			return false, fmt.Errorf("failed to get http response, error: %s", err)
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return false, fmt.Errorf("failed to read response body, error: %s", err)
-			}
-			return false, fmt.Errorf("failed to start test: %d, error: %s", resp.StatusCode, string(body))
-		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return false, fmt.Errorf("failed to read response body, error: %s", err)
-		}
-
-		responseModel := &UploadURLRequest{}
-
-		if err := json.Unmarshal(body, responseModel); err != nil {
-			return false, fmt.Errorf("failed to unmarshal response body, error: %s", err)
-		}
-
-		if err := uploadFile(responseModel.AppURL, configs.ZipPath); err != nil {
-			return false, fmt.Errorf("failed to upload file(%s) to (%s), error: %s", configs.ZipPath, responseModel.AppURL, err)
-		}
-
-		log.TDonef("=> .xctestrun uploaded")
+	if err := s.uploadIPAs(configs); err != nil {
+		return false, fmt.Errorf("failed to upload IPAs, error: %s", err)
 	}
+	log.TDonef("=> .xctestrun uploaded")
 
 	fmt.Println()
 	log.TInfof("Start test")
-	{
-		url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
-
-		testModel := &testing.TestMatrix{}
-		testModel.EnvironmentMatrix = &testing.EnvironmentMatrix{IosDeviceList: &testing.IosDeviceList{}}
-		testModel.EnvironmentMatrix.IosDeviceList.IosDevices = []*testing.IosDevice{}
-		testModel.FlakyTestAttempts = int64(configs.NumFlakyTestAttempts)
-
-		scanner := bufio.NewScanner(strings.NewReader(configs.TestDevices))
-		for scanner.Scan() {
-			device := scanner.Text()
-			device = strings.TrimSpace(device)
-			if device == "" {
-				continue
-			}
-
-			deviceParams := strings.Split(device, ",")
-			if len(deviceParams) != 4 {
-				return false, fmt.Errorf("invalid test device configuration: %s", device)
-			}
-
-			newDevice := testing.IosDevice{
-				IosModelId:   deviceParams[0],
-				IosVersionId: deviceParams[1],
-				Locale:       deviceParams[2],
-				Orientation:  deviceParams[3],
-			}
-
-			testModel.EnvironmentMatrix.IosDeviceList.IosDevices = append(testModel.EnvironmentMatrix.IosDeviceList.IosDevices, &newDevice)
-		}
-
-		testModel.TestSpecification = &testing.TestSpecification{
-			TestTimeout: fmt.Sprintf("%fs", configs.TestTimeout),
-		}
-
-		testModel.TestSpecification.IosXcTest = &testing.IosXcTest{}
-
-		jsonByte, err := json.Marshal(testModel)
-		if err != nil {
-			return false, fmt.Errorf("failed to marshal test model, error: %s", err)
-		}
-
-		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonByte))
-		if err != nil {
-			return false, fmt.Errorf("failed to create http request, error: %s", err)
-		}
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			return false, fmt.Errorf("failed to get http response, error: %s", err)
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return false, fmt.Errorf("failed to read response body, error: %s", err)
-			}
-			return false, fmt.Errorf("failed to start test: %d, error: %s", resp.StatusCode, string(body))
-		}
-
-		log.TDonef("=> Test started")
+	if err := s.startTests(configs); err != nil {
+		return false, fmt.Errorf("failed to start tests, error: %s", err)
 	}
+	log.TDonef("=> Test started")
 
 	fmt.Println()
 	log.TInfof("Waiting for test results")
-	{
-		finished := false
-		printedLogs := []string{}
-
-		stepIDToStepStates := map[string]stepStates{}
-
-		for !finished {
-			url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
-
-			req, err := http.NewRequest("GET", url, nil)
-			if err != nil {
-				return false, fmt.Errorf("failed to create http request, error: %s", err)
-			}
-
-			client := &http.Client{}
-			resp, err := client.Do(req)
-			if err != nil || (resp != nil && resp.StatusCode != http.StatusOK) {
-				resp, err = client.Do(req)
-				if err != nil {
-					return false, fmt.Errorf("failed to get http response, error: %s", err)
-				}
-			}
-
-			if resp == nil || resp.Body == nil {
-				return false, fmt.Errorf("failed to get http response, response body is nil")
-			}
-
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return false, fmt.Errorf("failed to read response body, error: %s", err)
-			}
-
-			if resp.StatusCode != http.StatusOK {
-				return false, fmt.Errorf("failed to get test status, error: %s", string(body))
-			}
-
-			responseModel := &toolresults.ListStepsResponse{}
-
-			if err := json.Unmarshal(body, responseModel); err != nil {
-				return false, fmt.Errorf("failed to unmarshal response body, error: %s, body: %s", err, string(body))
-			}
-
-			updateStepsStates(stepIDToStepStates, *responseModel)
-
-			finished = true
-			testsRunning := 0
-			for _, step := range responseModel.Steps {
-				if step.State != "complete" {
-					finished = false
-					testsRunning++
-				}
-			}
-
-			msg := ""
-			if len(responseModel.Steps) == 0 {
-				finished = false
-				msg = "- Validating"
-			} else {
-				msg = fmt.Sprintf("- (%d/%d) running", testsRunning, len(responseModel.Steps))
-			}
-
-			if !sliceutil.IsStringInSlice(msg, printedLogs) {
-				log.Printf(msg)
-				printedLogs = append(printedLogs, msg)
-			}
-
-			if finished {
-				log.TDonef("=> Test finished")
-				fmt.Println()
-
-				printStepsStates(stepIDToStepStates, time.Now(), os.Stdout)
-				fmt.Println()
-
-				log.TInfof("Test results:")
-				w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-				if _, err := fmt.Fprintln(w, "Model\tOS version\tOrientation\tLocale\tOutcome\t"); err != nil {
-					return false, fmt.Errorf("failed to write in writer")
-				}
-
-				for _, step := range responseModel.Steps {
-					dimensions := createDimensions(*step)
-
-					outcome := step.Outcome.Summary
-
-					switch outcome {
-					case "success":
-						outcome = colorstring.Green(outcome)
-					case "failure":
-						successful = false
-						if step.Outcome.FailureDetail != nil {
-							if step.Outcome.FailureDetail.Crashed {
-								outcome += "(Crashed)"
-							}
-							if step.Outcome.FailureDetail.NotInstalled {
-								outcome += "(NotInstalled)"
-							}
-							if step.Outcome.FailureDetail.OtherNativeCrash {
-								outcome += "(OtherNativeCrash)"
-							}
-							if step.Outcome.FailureDetail.TimedOut {
-								outcome += "(TimedOut)"
-							}
-							if step.Outcome.FailureDetail.UnableToCrawl {
-								outcome += "(UnableToCrawl)"
-							}
-						}
-						outcome = colorstring.Red(outcome)
-					case "inconclusive":
-						successful = false
-						if step.Outcome.InconclusiveDetail != nil {
-							if step.Outcome.InconclusiveDetail.AbortedByUser {
-								outcome += "(AbortedByUser)"
-							}
-							if step.Outcome.InconclusiveDetail.InfrastructureFailure {
-								outcome += "(InfrastructureFailure)"
-							}
-						}
-						outcome = colorstring.Yellow(outcome)
-					case "skipped":
-						successful = false
-						if step.Outcome.SkippedDetail != nil {
-							if step.Outcome.SkippedDetail.IncompatibleAppVersion {
-								outcome += "(IncompatibleAppVersion)"
-							}
-							if step.Outcome.SkippedDetail.IncompatibleArchitecture {
-								outcome += "(IncompatibleArchitecture)"
-							}
-							if step.Outcome.SkippedDetail.IncompatibleDevice {
-								outcome += "(IncompatibleDevice)"
-							}
-						}
-						outcome = colorstring.Blue(outcome)
-					}
-
-					if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t\n", dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"], outcome); err != nil {
-						return false, fmt.Errorf("failed to write in writer")
-					}
-				}
-				if err := w.Flush(); err != nil {
-					log.Errorf("Failed to flush writer, error: %s", err)
-				}
-			}
-			if !finished {
-				time.Sleep(10 * time.Second)
-			}
-		}
+	isTestSuccessful, err := s.waitForTestResult(configs)
+	if err != nil {
+		return false, fmt.Errorf("failed to wait for test results, error: %s", err)
 	}
 
-	return successful, nil
+	return isTestSuccessful, nil
 }
 
 func (s VDTForIosStep) ExportOutput(configs ConfigsModel) error {
@@ -452,6 +214,261 @@ func (s VDTForIosStep) ExportOutput(configs ConfigsModel) error {
 		}
 	}
 	return nil
+}
+
+func (s VDTForIosStep) uploadIPAs(configs ConfigsModel) error {
+	url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
+
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create http request, error: %s", err)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to get http response, error: %s", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read response body, error: %s", err)
+		}
+		return fmt.Errorf("failed to start test: %d, error: %s", resp.StatusCode, string(body))
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response body, error: %s", err)
+	}
+
+	responseModel := &UploadURLRequest{}
+
+	if err := json.Unmarshal(body, responseModel); err != nil {
+		return fmt.Errorf("failed to unmarshal response body, error: %s", err)
+	}
+
+	if err := uploadFile(responseModel.AppURL, configs.ZipPath); err != nil {
+		return fmt.Errorf("failed to upload file(%s) to (%s), error: %s", configs.ZipPath, responseModel.AppURL, err)
+	}
+
+	return nil
+}
+
+func (s VDTForIosStep) startTests(configs ConfigsModel) error {
+	url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
+
+	testModel := &testing.TestMatrix{}
+	testModel.EnvironmentMatrix = &testing.EnvironmentMatrix{IosDeviceList: &testing.IosDeviceList{}}
+	testModel.EnvironmentMatrix.IosDeviceList.IosDevices = []*testing.IosDevice{}
+	testModel.FlakyTestAttempts = int64(configs.NumFlakyTestAttempts)
+
+	scanner := bufio.NewScanner(strings.NewReader(configs.TestDevices))
+	for scanner.Scan() {
+		device := scanner.Text()
+		device = strings.TrimSpace(device)
+		if device == "" {
+			continue
+		}
+
+		deviceParams := strings.Split(device, ",")
+		if len(deviceParams) != 4 {
+			return fmt.Errorf("invalid test device configuration: %s", device)
+		}
+
+		newDevice := testing.IosDevice{
+			IosModelId:   deviceParams[0],
+			IosVersionId: deviceParams[1],
+			Locale:       deviceParams[2],
+			Orientation:  deviceParams[3],
+		}
+
+		testModel.EnvironmentMatrix.IosDeviceList.IosDevices = append(testModel.EnvironmentMatrix.IosDeviceList.IosDevices, &newDevice)
+	}
+
+	testModel.TestSpecification = &testing.TestSpecification{
+		TestTimeout: fmt.Sprintf("%fs", configs.TestTimeout),
+	}
+
+	testModel.TestSpecification.IosXcTest = &testing.IosXcTest{}
+
+	jsonByte, err := json.Marshal(testModel)
+	if err != nil {
+		return fmt.Errorf("failed to marshal test model, error: %s", err)
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonByte))
+	if err != nil {
+		return fmt.Errorf("failed to create http request, error: %s", err)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to get http response, error: %s", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read response body, error: %s", err)
+		}
+		return fmt.Errorf("failed to start test: %d, error: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
+func (s VDTForIosStep) waitForTestResult(configs ConfigsModel) (bool, error) {
+	successful := true
+	finished := false
+	printedLogs := []string{}
+
+	stepIDToStepStates := map[string]stepStates{}
+
+	for !finished {
+		url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
+
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return false, fmt.Errorf("failed to create http request, error: %s", err)
+		}
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil || (resp != nil && resp.StatusCode != http.StatusOK) {
+			resp, err = client.Do(req)
+			if err != nil {
+				return false, fmt.Errorf("failed to get http response, error: %s", err)
+			}
+		}
+
+		if resp == nil || resp.Body == nil {
+			return false, fmt.Errorf("failed to get http response, response body is nil")
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return false, fmt.Errorf("failed to read response body, error: %s", err)
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			return false, fmt.Errorf("failed to get test status, error: %s", string(body))
+		}
+
+		responseModel := &toolresults.ListStepsResponse{}
+
+		if err := json.Unmarshal(body, responseModel); err != nil {
+			return false, fmt.Errorf("failed to unmarshal response body, error: %s, body: %s", err, string(body))
+		}
+
+		updateStepsStates(stepIDToStepStates, *responseModel)
+
+		finished = true
+		testsRunning := 0
+		for _, step := range responseModel.Steps {
+			if step.State != "complete" {
+				finished = false
+				testsRunning++
+			}
+		}
+
+		msg := ""
+		if len(responseModel.Steps) == 0 {
+			finished = false
+			msg = "- Validating"
+		} else {
+			msg = fmt.Sprintf("- (%d/%d) running", testsRunning, len(responseModel.Steps))
+		}
+
+		if !sliceutil.IsStringInSlice(msg, printedLogs) {
+			log.Printf(msg)
+			printedLogs = append(printedLogs, msg)
+		}
+
+		if finished {
+			log.TDonef("=> Test finished")
+			fmt.Println()
+
+			printStepsStates(stepIDToStepStates, time.Now(), os.Stdout)
+			fmt.Println()
+
+			log.TInfof("Test results:")
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
+			if _, err := fmt.Fprintln(w, "Model\tOS version\tOrientation\tLocale\tOutcome\t"); err != nil {
+				return false, fmt.Errorf("failed to write in writer")
+			}
+
+			for _, step := range responseModel.Steps {
+				dimensions := createDimensions(*step)
+
+				outcome := step.Outcome.Summary
+
+				switch outcome {
+				case "success":
+					outcome = colorstring.Green(outcome)
+				case "failure":
+					successful = false
+					if step.Outcome.FailureDetail != nil {
+						if step.Outcome.FailureDetail.Crashed {
+							outcome += "(Crashed)"
+						}
+						if step.Outcome.FailureDetail.NotInstalled {
+							outcome += "(NotInstalled)"
+						}
+						if step.Outcome.FailureDetail.OtherNativeCrash {
+							outcome += "(OtherNativeCrash)"
+						}
+						if step.Outcome.FailureDetail.TimedOut {
+							outcome += "(TimedOut)"
+						}
+						if step.Outcome.FailureDetail.UnableToCrawl {
+							outcome += "(UnableToCrawl)"
+						}
+					}
+					outcome = colorstring.Red(outcome)
+				case "inconclusive":
+					successful = false
+					if step.Outcome.InconclusiveDetail != nil {
+						if step.Outcome.InconclusiveDetail.AbortedByUser {
+							outcome += "(AbortedByUser)"
+						}
+						if step.Outcome.InconclusiveDetail.InfrastructureFailure {
+							outcome += "(InfrastructureFailure)"
+						}
+					}
+					outcome = colorstring.Yellow(outcome)
+				case "skipped":
+					successful = false
+					if step.Outcome.SkippedDetail != nil {
+						if step.Outcome.SkippedDetail.IncompatibleAppVersion {
+							outcome += "(IncompatibleAppVersion)"
+						}
+						if step.Outcome.SkippedDetail.IncompatibleArchitecture {
+							outcome += "(IncompatibleArchitecture)"
+						}
+						if step.Outcome.SkippedDetail.IncompatibleDevice {
+							outcome += "(IncompatibleDevice)"
+						}
+					}
+					outcome = colorstring.Blue(outcome)
+				}
+
+				if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t\n", dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"], outcome); err != nil {
+					return false, fmt.Errorf("failed to write in writer")
+				}
+			}
+			if err := w.Flush(); err != nil {
+				log.Errorf("Failed to flush writer, error: %s", err)
+			}
+		}
+		if !finished {
+			time.Sleep(10 * time.Second)
+		}
+	}
+
+	return successful, nil
 }
 
 func downloadFile(url string, localPath string) error {
