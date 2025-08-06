@@ -321,11 +321,11 @@ func (s VDTForIosStep) startTests(configs ConfigsModel) error {
 }
 
 func (s VDTForIosStep) waitForTestResult(configs ConfigsModel) (bool, error) {
-	successful := true
 	finished := false
 	printedLogs := []string{}
 
 	stepIDToStepStates := map[string]stepStates{}
+	dimensionToStatus := map[string]bool{}
 
 	for !finished {
 		url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
@@ -404,14 +404,32 @@ func (s VDTForIosStep) waitForTestResult(configs ConfigsModel) (bool, error) {
 				dimensions := createDimensions(*step)
 				outcome := step.Outcome.Summary
 
-				fmt.Printf("%s: %s\n", dimensions, outcome)
+				dimensionID := fmt.Sprintf("%s.%s.%s.%s", dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"])
+				dimensionToStatus[dimensionID] = true
+
+				fmt.Printf("%s: %s\n", dimensionID, outcome)
+
+				isSuccess := true
+				if outcome == "failure" || outcome == "inconclusive" || outcome == "skipped" {
+					isSuccess = false
+				}
+
+				_, exists := dimensionToStatus[dimensionID]
+				if exists {
+					if isSuccess {
+						// Mark the dimension as successful if at least one step (test run) was successful.
+						dimensionToStatus[dimensionID] = true
+					}
+				} else {
+					dimensionToStatus[dimensionID] = isSuccess
+				}
 
 				switch outcome {
 				case "success":
-					successful = true
+					dimensionToStatus[dimensionID] = true
 					outcome = colorstring.Green(outcome)
 				case "failure":
-					successful = false
+					dimensionToStatus[dimensionID] = false
 					if step.Outcome.FailureDetail != nil {
 						if step.Outcome.FailureDetail.Crashed {
 							outcome += "(Crashed)"
@@ -431,7 +449,7 @@ func (s VDTForIosStep) waitForTestResult(configs ConfigsModel) (bool, error) {
 					}
 					outcome = colorstring.Red(outcome)
 				case "inconclusive":
-					successful = false
+					dimensionToStatus[dimensionID] = false
 					if step.Outcome.InconclusiveDetail != nil {
 						if step.Outcome.InconclusiveDetail.AbortedByUser {
 							outcome += "(AbortedByUser)"
@@ -442,7 +460,7 @@ func (s VDTForIosStep) waitForTestResult(configs ConfigsModel) (bool, error) {
 					}
 					outcome = colorstring.Yellow(outcome)
 				case "skipped":
-					successful = false
+					dimensionToStatus[dimensionID] = false
 					if step.Outcome.SkippedDetail != nil {
 						if step.Outcome.SkippedDetail.IncompatibleAppVersion {
 							outcome += "(IncompatibleAppVersion)"
@@ -470,7 +488,18 @@ func (s VDTForIosStep) waitForTestResult(configs ConfigsModel) (bool, error) {
 		}
 	}
 
-	return successful, nil
+	testRunSuccessful := true
+	var failingDimensions []string
+	for dimension, isSuccess := range dimensionToStatus {
+		if !isSuccess {
+			testRunSuccessful = false
+			failingDimensions = append(failingDimensions, dimension)
+		}
+	}
+
+	fmt.Println("Failing dimensions:", strings.Join(failingDimensions, "\n"))
+
+	return testRunSuccessful, nil
 }
 
 func downloadFile(url string, localPath string) error {
