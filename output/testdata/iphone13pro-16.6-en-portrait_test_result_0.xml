@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name='' hostname='localhost' tests='1' failures='0' skipped='0' errors='0' time='0.007' timestamp='2025-08-06T05:14:08'>
+    <properties />
+    <testcase name='testRandomlyFail' classname='BullsEyeFailingTests.BullsEyeRandomlyFailingTests' time='0.007' />
+  </testsuite>
+</testsuites>

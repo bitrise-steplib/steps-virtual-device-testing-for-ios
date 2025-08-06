@@ -26,7 +26,6 @@ import (
 	logv2 "github.com/bitrise-io/go-utils/v2/log"
 	"github.com/bitrise-steplib/steps-deploy-to-bitrise-io/test/converters/junitxml"
 	"github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/output"
-	"github.com/ryanuber/go-glob"
 )
 
 // ConfigsModel ...
@@ -69,8 +68,6 @@ func main() {
 
 	stepconf.Print(configs)
 	fmt.Println()
-
-	successful := true
 
 	log.TInfof("Upload IPAs")
 	{
@@ -181,6 +178,8 @@ func main() {
 
 	fmt.Println()
 	log.TInfof("Waiting for test results")
+
+	dimensionToStatus := map[string]bool{}
 	{
 		finished := false
 		printedLogs := []string{}
@@ -262,8 +261,23 @@ func main() {
 
 				for _, step := range responseModel.Steps {
 					dimensions := createDimensions(*step)
-
 					outcome := step.Outcome.Summary
+
+					dimensionID := fmt.Sprintf("%s.%s.%s.%s", dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"])
+					isSuccess := true
+					if outcome == "failure" || outcome == "inconclusive" || outcome == "skipped" {
+						isSuccess = false
+					}
+
+					_, exists := dimensionToStatus[dimensionID]
+					if exists {
+						if isSuccess {
+							// Mark the dimension as successful if at least one step (test run) was successful.
+							dimensionToStatus[dimensionID] = true
+						}
+					} else {
+						dimensionToStatus[dimensionID] = isSuccess
+					}
 
 					switch outcome {
 					case "success":
@@ -366,8 +380,7 @@ func main() {
 				failf("Failed to create temp dir, error: %s", err)
 			}
 
-			mergedTestResultXmlPth := ""
-			singleTestResultXmlPth := ""
+			var mergedTestResultXmlPths []string
 			for fileName, fileURL := range responseModel {
 				pth := filepath.Join(tempDir, fileName)
 				if err := downloadFile(fileURL, pth); err != nil {
@@ -375,33 +388,18 @@ func main() {
 				}
 
 				// per test run results: iphone13pro-16.6-en-portrait_test_result_0.xml
-				if glob.Glob("*test_result_*.xml", pth) {
-					singleTestResultXmlPth = pth
-				}
-
 				// merged result: iphone13pro-16.6-en-portrait-test_results_merged.xml
 				if strings.HasSuffix(fileName, "test_results_merged.xml") {
-					if mergedTestResultXmlPth != "" {
-						log.TWarnf("Multiple merged test results XML files found, using the last one: %s", pth)
-					} else {
-						log.TPrintf("Merged test results XML found: %s", pth)
-					}
-					mergedTestResultXmlPth = pth
+					mergedTestResultXmlPths = append(mergedTestResultXmlPths, pth)
 				}
 			}
 
-			testResultXmlPth := mergedTestResultXmlPth
-			if testResultXmlPth == "" && singleTestResultXmlPth != "" {
-				log.TWarnf("No merged test results XML found, using the latest single test result XML: %s", singleTestResultXmlPth)
-				testResultXmlPth = singleTestResultXmlPth
-			}
-
-			log.TPrintf("Test results XML: %s", testResultXmlPth)
+			log.TPrintf("%d test results XML(s) found", len(mergedTestResultXmlPths))
 			log.TDonef("=> %d Test Assets downloaded", len(responseModel))
 
 			if err := outputExporter.ExportTestResultsDir(tempDir); err != nil {
 				log.TWarnf("Failed to export test assets: %s", err)
-			} else if testResultXmlPth != "" {
+			} else if len(mergedTestResultXmlPths) > 0 {
 				if err := outputExporter.ExportFlakyTestsEnvVar(testResultXmlPth); err != nil {
 					log.TWarnf("Failed to export flaky tests env var: %s", err)
 				}
@@ -409,7 +407,15 @@ func main() {
 		}
 	}
 
-	if !successful {
+	testRunSuccessful := true
+	for _, isSuccess := range dimensionToStatus {
+		if !isSuccess {
+			testRunSuccessful = false
+			break
+		}
+	}
+
+	if !testRunSuccessful {
 		os.Exit(1)
 	}
 }

@@ -2,15 +2,39 @@ package output
 
 import (
 	"fmt"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/bitrise-steplib/steps-deploy-to-bitrise-io/test/testreport"
 	"github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/mocks"
 )
+
+func TestOutput(t *testing.T) {
+	_, b, _, _ := runtime.Caller(0)
+	outputPackageDir := filepath.Dir(b)
+	testDataDir := filepath.Join(outputPackageDir, "testdata")
+	mergedTestResultXMLPaths := []string{
+		filepath.Join(testDataDir, "iphone8-16.6-en-portrait-test_results_merged.xml"),
+		filepath.Join(testDataDir, "iphone13pro-16.6-en-landscape-test_results_merged.xml"),
+		filepath.Join(testDataDir, "iphone13pro-16.6-en-portrait-test_results_merged.xml"),
+	}
+	//wantFlakyTestsEnvValue := `- iphone8-16.6-en-portrait.Suite1.TestCase1`
+
+	logger := mocks.NewLogger(t)
+	mockOutputExporter := mocks.NewOutputExporter(t)
+
+	e := exporter{
+		outputExporter: mockOutputExporter,
+		logger:         logger,
+	}
+
+	err := e.ExportFlakyTestsEnvVar(mergedTestResultXMLPaths)
+	require.NoError(t, err)
+}
 
 func Test_exporter_ExportFlakyTestsEnvVar(t *testing.T) {
 	longTestSuitName1 := "Suite1"
@@ -18,20 +42,18 @@ func Test_exporter_ExportFlakyTestsEnvVar(t *testing.T) {
 
 	tests := []struct {
 		name                   string
-		testReport             testreport.TestReport
+		testReport             TestReport
 		wantFlakyTestsEnvValue string
 		expectedWarningLogArgs []any
 	}{
 		{
 			name: "No flaky tests",
-			testReport: testreport.TestReport{
-				TestSuites: []testreport.TestSuite{
-					{
-						Name: "Suite1",
-						TestCases: []testreport.TestCase{
-							{
-								Name: "TestCase1",
-							},
+			testReport: TestReport{
+				TestSuite: TestSuite{
+					Name: "Suite1",
+					TestCases: []TestCase{
+						{
+							Name: "TestCase1",
 						},
 					},
 				},
@@ -39,18 +61,14 @@ func Test_exporter_ExportFlakyTestsEnvVar(t *testing.T) {
 		},
 		{
 			name: "One flaky test",
-			testReport: testreport.TestReport{
-				TestSuites: []testreport.TestSuite{
-					{
-						Name: "Suite1",
-						TestCases: []testreport.TestCase{
-							{
-								Name:    "TestCase1",
-								Failure: &testreport.Failure{},
-							},
-							{
-								Name: "TestCase1",
-							},
+			testReport: TestReport{
+				TestSuite: TestSuite{
+					Name: "Suite1",
+					TestCases: []TestCase{
+						{
+							Name:    "TestCase1",
+							Failure: &Failure{},
+							Flaky:   "true",
 						},
 					},
 				},
@@ -59,52 +77,38 @@ func Test_exporter_ExportFlakyTestsEnvVar(t *testing.T) {
 		},
 		{
 			name: "Multiple flaky tests",
-			testReport: testreport.TestReport{
-				TestSuites: []testreport.TestSuite{
-					{
-						Name: "Suite1",
-						TestCases: []testreport.TestCase{
-							{
-								ClassName: "com.example.TestClass1",
-								Name:      "testMethod1",
-								Failure:   &testreport.Failure{},
-							},
-							{
-								ClassName: "com.example.TestClass1",
-								Name:      "testMethod1",
-							},
-							{
-								ClassName: "com.example.TestClass1",
-								Name:      "testMethod2",
-								Failure:   &testreport.Failure{},
-							},
-							{
-								ClassName: "com.example.TestClass1",
-								Name:      "testMethod2",
-							},
-							{
-								ClassName: "com.example.TestClass2",
-								Name:      "testMethod1",
-								Failure:   &testreport.Failure{},
-							},
-							{
-								ClassName: "com.example.TestClass2",
-								Name:      "testMethod1",
-							},
+			testReport: TestReport{
+				TestSuite: TestSuite{
+					Name: "Suite1",
+					TestCases: []TestCase{
+						{
+							ClassName: "com.example.TestClass1",
+							Name:      "testMethod1",
+							Failure:   &Failure{},
+							Flaky:     "true",
+						},
+						{
+							ClassName: "com.example.TestClass1",
+							Name:      "testMethod2",
+							Failure:   &Failure{},
+							Flaky:     "true",
+						},
+						{
+							ClassName: "com.example.TestClass2",
+							Name:      "testMethod1",
+							Failure:   &Failure{},
+							Flaky:     "true",
 						},
 					},
-					{
-						Name: "Suite2",
-						TestCases: []testreport.TestCase{
-							{
-								ClassName: "com.example.TestClass1",
-								Name:      "testMethod1",
-								Failure:   &testreport.Failure{},
-							},
-							{
-								ClassName: "com.example.TestClass1",
-								Name:      "testMethod1",
-							},
+				},
+				{
+					Name: "Suite2",
+					TestCases: []TestCase{
+						{
+							ClassName: "com.example.TestClass1",
+							Name:      "testMethod1",
+							Failure:   &Failure{},
+							Flaky:     "true",
 						},
 					},
 				},
@@ -117,33 +121,27 @@ func Test_exporter_ExportFlakyTestsEnvVar(t *testing.T) {
 		},
 		{
 			name: "Tests with the same Test ID exported only once",
-			testReport: testreport.TestReport{
-				TestSuites: []testreport.TestSuite{
+			testReport: TestReport{
+				TestSuites: []TestSuite{
 					{
 						Name: "Suite1",
-						TestCases: []testreport.TestCase{
+						TestCases: []TestCase{
 							{
 								ClassName: "com.example.TestClass1",
 								Name:      "testMethod1",
-								Failure:   &testreport.Failure{},
-							},
-							{
-								ClassName: "com.example.TestClass1",
-								Name:      "testMethod1",
+								Failure:   &Failure{},
+								Flaky:     "true",
 							},
 						},
 					},
 					{
 						Name: "Suite1",
-						TestCases: []testreport.TestCase{
+						TestCases: []TestCase{
 							{
 								ClassName: "com.example.TestClass1",
 								Name:      "testMethod1",
-								Failure:   &testreport.Failure{},
-							},
-							{
-								ClassName: "com.example.TestClass1",
-								Name:      "testMethod1",
+								Failure:   &Failure{},
+								Flaky:     "true",
 							},
 						},
 					},
@@ -153,29 +151,25 @@ func Test_exporter_ExportFlakyTestsEnvVar(t *testing.T) {
 		},
 		{
 			name: "Flaky test cases env var size is limited",
-			testReport: testreport.TestReport{
-				TestSuites: []testreport.TestSuite{
+			testReport: TestReport{
+				TestSuites: []TestSuite{
 					{
 						Name: longTestSuitName1,
-						TestCases: []testreport.TestCase{
+						TestCases: []TestCase{
 							{
 								Name:    longTestCaseName1,
-								Failure: &testreport.Failure{},
-							},
-							{
-								Name: longTestCaseName1,
+								Failure: &Failure{},
+								Flaky:   "true",
 							},
 						},
 					},
 					{
 						Name: "Suite2",
-						TestCases: []testreport.TestCase{
+						TestCases: []TestCase{
 							{
 								Name:    "testMethod1",
-								Failure: &testreport.Failure{},
-							},
-							{
-								Name: "testMethod1",
+								Failure: &Failure{},
+								Flaky:   "true",
 							},
 						},
 					},

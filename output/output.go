@@ -1,11 +1,12 @@
 package output
 
 import (
+	"encoding/xml"
 	"fmt"
+	"os"
 
 	"github.com/bitrise-io/go-utils/v2/log"
 	"github.com/bitrise-steplib/steps-deploy-to-bitrise-io/test/converters/junitxml"
-	"github.com/bitrise-steplib/steps-deploy-to-bitrise-io/test/testreport"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 
 type Exporter interface {
 	ExportTestResultsDir(dir string) error
-	ExportFlakyTestsEnvVar(testResultXMLPth string) error
+	ExportFlakyTestsEnvVar(mergedTestResultXmlPths []string) error
 }
 
 type exporter struct {
@@ -40,13 +41,17 @@ func (e exporter) ExportTestResultsDir(dir string) error {
 	return nil
 }
 
-func (e exporter) ExportFlakyTestsEnvVar(testResultXMLPth string) error {
-	testReport, err := e.convertTestReport(testResultXMLPth)
-	if err != nil {
-		return fmt.Errorf("failed to convert test report (%s): %w", testResultXMLPth, err)
-	}
+func (e exporter) ExportFlakyTestsEnvVar(mergedTestResultXmlPths []string) error {
+	var flakyTestSuites []TestSuite
+	for _, testResultXMLPth := range mergedTestResultXmlPths {
+		testReport, err := e.convertTestReport(testResultXMLPth)
+		if err != nil {
+			return fmt.Errorf("failed to convert test report (%s): %w", testResultXMLPth, err)
+		}
 
-	flakyTestSuites := e.getFlakyTestSuites(testReport)
+		testSuites := e.getFlakyTestSuites(testReport)
+		flakyTestSuites = append(flakyTestSuites, testSuites...)
+	}
 
 	if err := e.exportFlakyTestCasesEnvVar(flakyTestSuites); err != nil {
 		return fmt.Errorf("failed to export flaky test cases env var: %w", err)
@@ -55,64 +60,42 @@ func (e exporter) ExportFlakyTestsEnvVar(testResultXMLPth string) error {
 	return nil
 }
 
-func (e exporter) convertTestReport(pth string) (testreport.TestReport, error) {
-	if !e.converter.Detect([]string{pth}) {
-		return testreport.TestReport{}, nil
+func (e exporter) convertTestReport(pth string) (TestReport, error) {
+	data, err := os.ReadFile(pth)
+	if err != nil {
+		return TestReport{}, err
 	}
 
-	testReport, err := e.converter.Convert()
-	if err != nil {
-		return testreport.TestReport{}, fmt.Errorf("failed to convert test report from %s: %w", pth, err)
+	var testReport TestReport
+	if err := xml.Unmarshal(data, &testReport); err == nil {
+		return testReport, nil
 	}
 
 	return testReport, nil
 }
 
-func (e exporter) getFlakyTestSuites(testReport testreport.TestReport) []testreport.TestSuite {
-	var flakyTestSuites []testreport.TestSuite
+func (e exporter) getFlakyTestSuites(testReport TestReport) []TestSuite {
+	var flakyTestSuites []TestSuite
 
-	for _, suite := range testReport.TestSuites {
-		var flakyTests []testreport.TestCase
-		testCasesToStatus := map[string]bool{}
-		alreadySeenFlakyTests := map[string]bool{}
-
-		for _, testCase := range suite.TestCases {
-			testCaseID := testCase.ClassName + "." + testCase.Name
-
-			newIsFailed := false
-			if testCase.Failure != nil {
-				newIsFailed = true
-			}
-
-			previousIsFailed, alreadySeen := testCasesToStatus[testCaseID]
-			if !alreadySeen {
-				testCasesToStatus[testCaseID] = newIsFailed
-			} else {
-				_, seen := alreadySeenFlakyTests[testCaseID]
-				if !seen && (previousIsFailed != newIsFailed) {
-					flakyTests = append(flakyTests, testreport.TestCase{
-						XMLName:   testCase.XMLName,
-						Name:      testCase.Name,
-						ClassName: testCase.ClassName,
-					})
-					alreadySeenFlakyTests[testCaseID] = true
-				}
-			}
+	var flakyTests []TestCase
+	for _, testCase := range testReport.TestSuite.TestCases {
+		if testCase.Flaky == "true" {
+			flakyTests = append(flakyTests, testCase)
 		}
+	}
 
-		if len(flakyTests) > 0 {
-			flakyTestSuites = append(flakyTestSuites, testreport.TestSuite{
-				XMLName:   suite.XMLName,
-				Name:      suite.Name,
-				TestCases: flakyTests,
-			})
-		}
+	if len(flakyTests) > 0 {
+		flakyTestSuites = append(flakyTestSuites, TestSuite{
+			XMLName:   testReport.TestSuite.XMLName,
+			Name:      testReport.TestSuite.Name,
+			TestCases: flakyTests,
+		})
 	}
 
 	return flakyTestSuites
 }
 
-func (e exporter) exportFlakyTestCasesEnvVar(flakyTestSuites []testreport.TestSuite) error {
+func (e exporter) exportFlakyTestCasesEnvVar(flakyTestSuites []TestSuite) error {
 	if len(flakyTestSuites) == 0 {
 		return nil
 	}
