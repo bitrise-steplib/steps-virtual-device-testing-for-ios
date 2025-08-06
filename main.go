@@ -51,9 +51,11 @@ type UploadURLRequest struct {
 	TestAppURL string `json:"testAppUrl"`
 }
 
-func failf(f string, v ...interface{}) {
-	log.Errorf(f, v...)
-	os.Exit(1)
+type VDTForIosStep struct {
+	envRepository  env.Repository
+	inputParser    stepconf.InputParser
+	logger         logv2.Logger
+	outputExporter output.Exporter
 }
 
 func main() {
@@ -62,14 +64,51 @@ func main() {
 	logger := logv2.NewLogger()
 	outputExporter := output.NewExporter(output.NewOutputExporter(), junitxml.Converter{}, logger)
 
+	step := NewVDTForIosStep(outputExporter, logger, inputParser, envRepository)
+	configs, err := step.ProcessInputs()
+	if err != nil {
+		failf("Process config: %s", err)
+	}
+	isTestSuccessful, err := step.Run(configs)
+	if err != nil {
+		failf("Run step: %s", err)
+	}
+	if err := step.ExportOutput(configs); err != nil {
+		if isTestSuccessful {
+			failf("Export output: %s", err)
+		} else {
+			log.TWarnf("Export output: %s", err)
+		}
+	}
+
+	if !isTestSuccessful {
+		log.TErrorf("Tests failed")
+		os.Exit(1)
+	}
+}
+
+func NewVDTForIosStep(outputExporter output.Exporter, logger logv2.Logger, inputParser stepconf.InputParser, envRepository env.Repository) VDTForIosStep {
+	return VDTForIosStep{
+		outputExporter: outputExporter,
+		logger:         logger,
+		inputParser:    inputParser,
+		envRepository:  envRepository,
+	}
+}
+
+func (s VDTForIosStep) ProcessInputs() (ConfigsModel, error) {
 	var configs ConfigsModel
-	if err := inputParser.Parse(&configs); err != nil {
-		failf("Process config: couldn't create step config: %v\n", err)
+	if err := s.inputParser.Parse(&configs); err != nil {
+		return ConfigsModel{}, fmt.Errorf("couldn't create step config: %w", err)
 	}
 
 	stepconf.Print(configs)
 	fmt.Println()
 
+	return configs, nil
+}
+
+func (s VDTForIosStep) Run(configs ConfigsModel) (bool, error) {
 	successful := true
 
 	log.TInfof("Upload IPAs")
@@ -78,36 +117,36 @@ func main() {
 
 		req, err := http.NewRequest("POST", url, nil)
 		if err != nil {
-			failf("Failed to create http request, error: %s", err)
+			return false, fmt.Errorf("failed to create http request, error: %s", err)
 		}
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
-			failf("Failed to get http response, error: %s", err)
+			return false, fmt.Errorf("failed to get http response, error: %s", err)
 		}
 
 		if resp.StatusCode != http.StatusOK {
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
-				failf("Failed to read response body, error: %s", err)
+				return false, fmt.Errorf("failed to read response body, error: %s", err)
 			}
-			failf("Failed to start test: %d, error: %s", resp.StatusCode, string(body))
+			return false, fmt.Errorf("failed to start test: %d, error: %s", resp.StatusCode, string(body))
 		}
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			failf("Failed to read response body, error: %s", err)
+			return false, fmt.Errorf("failed to read response body, error: %s", err)
 		}
 
 		responseModel := &UploadURLRequest{}
 
 		if err := json.Unmarshal(body, responseModel); err != nil {
-			failf("Failed to unmarshal response body, error: %s", err)
+			return false, fmt.Errorf("failed to unmarshal response body, error: %s", err)
 		}
 
 		if err := uploadFile(responseModel.AppURL, configs.ZipPath); err != nil {
-			failf("Failed to upload file(%s) to (%s), error: %s", configs.ZipPath, responseModel.AppURL, err)
+			return false, fmt.Errorf("failed to upload file(%s) to (%s), error: %s", configs.ZipPath, responseModel.AppURL, err)
 		}
 
 		log.TDonef("=> .xctestrun uploaded")
@@ -133,7 +172,7 @@ func main() {
 
 			deviceParams := strings.Split(device, ",")
 			if len(deviceParams) != 4 {
-				failf("Invalid test device configuration: %s", device)
+				return false, fmt.Errorf("invalid test device configuration: %s", device)
 			}
 
 			newDevice := testing.IosDevice{
@@ -154,26 +193,26 @@ func main() {
 
 		jsonByte, err := json.Marshal(testModel)
 		if err != nil {
-			failf("Failed to marshal test model, error: %s", err)
+			return false, fmt.Errorf("failed to marshal test model, error: %s", err)
 		}
 
 		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonByte))
 		if err != nil {
-			failf("Failed to create http request, error: %s", err)
+			return false, fmt.Errorf("failed to create http request, error: %s", err)
 		}
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
-			failf("Failed to get http response, error: %s", err)
+			return false, fmt.Errorf("failed to get http response, error: %s", err)
 		}
 
 		if resp.StatusCode != http.StatusOK {
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
-				failf("Failed to read response body, error: %s", err)
+				return false, fmt.Errorf("failed to read response body, error: %s", err)
 			}
-			failf("Failed to start test: %d, error: %s", resp.StatusCode, string(body))
+			return false, fmt.Errorf("failed to start test: %d, error: %s", resp.StatusCode, string(body))
 		}
 
 		log.TDonef("=> Test started")
@@ -192,7 +231,7 @@ func main() {
 
 			req, err := http.NewRequest("GET", url, nil)
 			if err != nil {
-				failf("Failed to create http request, error: %s", err)
+				return false, fmt.Errorf("failed to create http request, error: %s", err)
 			}
 
 			client := &http.Client{}
@@ -200,27 +239,27 @@ func main() {
 			if err != nil || (resp != nil && resp.StatusCode != http.StatusOK) {
 				resp, err = client.Do(req)
 				if err != nil {
-					failf("Failed to get http response, error: %s", err)
+					return false, fmt.Errorf("failed to get http response, error: %s", err)
 				}
 			}
 
 			if resp == nil || resp.Body == nil {
-				failf("Failed to get http response, response body is nil")
+				return false, fmt.Errorf("failed to get http response, response body is nil")
 			}
 
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
-				failf("Failed to read response body, error: %s", err)
+				return false, fmt.Errorf("failed to read response body, error: %s", err)
 			}
 
 			if resp.StatusCode != http.StatusOK {
-				failf("Failed to get test status, error: %s", string(body))
+				return false, fmt.Errorf("failed to get test status, error: %s", string(body))
 			}
 
 			responseModel := &toolresults.ListStepsResponse{}
 
 			if err := json.Unmarshal(body, responseModel); err != nil {
-				failf("Failed to unmarshal response body, error: %s, body: %s", err, string(body))
+				return false, fmt.Errorf("failed to unmarshal response body, error: %s, body: %s", err, string(body))
 			}
 
 			updateStepsStates(stepIDToStepStates, *responseModel)
@@ -257,7 +296,7 @@ func main() {
 				log.TInfof("Test results:")
 				w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
 				if _, err := fmt.Fprintln(w, "Model\tOS version\tOrientation\tLocale\tOutcome\t"); err != nil {
-					failf("Failed to write in writer")
+					return false, fmt.Errorf("failed to write in writer")
 				}
 
 				for _, step := range responseModel.Steps {
@@ -316,7 +355,7 @@ func main() {
 					}
 
 					if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t\n", dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"], outcome); err != nil {
-						failf("Failed to write in writer")
+						return false, fmt.Errorf("failed to write in writer")
 					}
 				}
 				if err := w.Flush(); err != nil {
@@ -329,6 +368,10 @@ func main() {
 		}
 	}
 
+	return successful, nil
+}
+
+func (s VDTForIosStep) ExportOutput(configs ConfigsModel) error {
 	if configs.DownloadTestResults {
 		fmt.Println()
 		log.TInfof("Downloading test assets")
@@ -337,33 +380,33 @@ func main() {
 
 			req, err := http.NewRequest("GET", url, nil)
 			if err != nil {
-				failf("Failed to create http request, error: %s", err)
+				return fmt.Errorf("failed to create http request, error: %s", err)
 			}
 
 			client := &http.Client{}
 			resp, err := client.Do(req)
 			if err != nil {
-				failf("Failed to get http response, error: %s", err)
+				return fmt.Errorf("failed to get http response, error: %s", err)
 			}
 
 			if resp.StatusCode != http.StatusOK {
-				failf("Failed to get http response, status code: %d", resp.StatusCode)
+				return fmt.Errorf("failed to get http response, status code: %d", resp.StatusCode)
 			}
 
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
-				failf("Failed to read response body, error: %s", err)
+				return fmt.Errorf("failed to read response body, error: %s", err)
 			}
 
 			responseModel := map[string]string{}
 
 			if err := json.Unmarshal(body, &responseModel); err != nil {
-				failf("Failed to unmarshal response body, error: %s", err)
+				return fmt.Errorf("failed to unmarshal response body, error: %s", err)
 			}
 
 			tempDir, err := pathutil.NormalizedOSTempDirPath("vdtesting_test_assets")
 			if err != nil {
-				failf("Failed to create temp dir, error: %s", err)
+				return fmt.Errorf("failed to create temp dir, error: %s", err)
 			}
 
 			mergedTestResultXmlPth := ""
@@ -371,7 +414,7 @@ func main() {
 			for fileName, fileURL := range responseModel {
 				pth := filepath.Join(tempDir, fileName)
 				if err := downloadFile(fileURL, pth); err != nil {
-					failf("Failed to download file, error: %s", err)
+					return fmt.Errorf("failed to download file, error: %s", err)
 				}
 
 				// per test run results: iphone13pro-16.6-en-portrait_test_result_0.xml
@@ -399,19 +442,16 @@ func main() {
 			log.TPrintf("Test results XML: %s", testResultXmlPth)
 			log.TDonef("=> %d Test Assets downloaded", len(responseModel))
 
-			if err := outputExporter.ExportTestResultsDir(tempDir); err != nil {
+			if err := s.outputExporter.ExportTestResultsDir(tempDir); err != nil {
 				log.TWarnf("Failed to export test assets: %s", err)
 			} else if testResultXmlPth != "" {
-				if err := outputExporter.ExportFlakyTestsEnvVar(testResultXmlPth); err != nil {
+				if err := s.outputExporter.ExportFlakyTestsEnvVar(testResultXmlPth); err != nil {
 					log.TWarnf("Failed to export flaky tests env var: %s", err)
 				}
 			}
 		}
 	}
-
-	if !successful {
-		os.Exit(1)
-	}
+	return nil
 }
 
 func downloadFile(url string, localPath string) error {
@@ -513,4 +553,9 @@ func createDimensions(step toolresults.Step) map[string]string {
 		dimensions[dimension.Key] = dimension.Value
 	}
 	return dimensions
+}
+
+func failf(f string, v ...interface{}) {
+	log.Errorf(f, v...)
+	os.Exit(1)
 }
