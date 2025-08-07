@@ -22,10 +22,13 @@ func TestOutput(t *testing.T) {
 		filepath.Join(testDataDir, "iphone13pro-16.6-en-landscape-test_results_merged.xml"),
 		filepath.Join(testDataDir, "iphone13pro-16.6-en-portrait-test_results_merged.xml"),
 	}
-	//wantFlakyTestsEnvValue := `- iphone8-16.6-en-portrait.Suite1.TestCase1`
+	wantFlakyTestsEnvValue := "- BullsEyeFailingTests.BullsEyeRandomlyFailingTests.testRandomlyFail\n"
 
 	logger := mocks.NewLogger(t)
 	mockOutputExporter := mocks.NewOutputExporter(t)
+
+	logger.On("TDonef", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	mockOutputExporter.On("ExportOutput", "BITRISE_FLAKY_TEST_CASES", wantFlakyTestsEnvValue).Return(nil)
 
 	e := exporter{
 		outputExporter: mockOutputExporter,
@@ -36,20 +39,20 @@ func TestOutput(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func Test_exporter_ExportFlakyTestsEnvVar(t *testing.T) {
+func Test_exporter_exportFlakyTestCasesEnvVar(t *testing.T) {
 	longTestSuitName1 := "Suite1"
 	longTestCaseName1 := strings.Repeat("a", flakyTestCasesEnvVarSizeLimitInBytes-len(fmt.Sprintf("- %s.\n", longTestSuitName1)))
 
 	tests := []struct {
 		name                   string
-		testReport             TestReport
+		testSuites             []TestSuite
 		wantFlakyTestsEnvValue string
 		expectedWarningLogArgs []any
 	}{
 		{
 			name: "No flaky tests",
-			testReport: TestReport{
-				TestSuite: TestSuite{
+			testSuites: []TestSuite{
+				{
 					Name: "Suite1",
 					TestCases: []TestCase{
 						{
@@ -61,8 +64,8 @@ func Test_exporter_ExportFlakyTestsEnvVar(t *testing.T) {
 		},
 		{
 			name: "One flaky test",
-			testReport: TestReport{
-				TestSuite: TestSuite{
+			testSuites: []TestSuite{
+				{
 					Name: "Suite1",
 					TestCases: []TestCase{
 						{
@@ -77,8 +80,8 @@ func Test_exporter_ExportFlakyTestsEnvVar(t *testing.T) {
 		},
 		{
 			name: "Multiple flaky tests",
-			testReport: TestReport{
-				TestSuite: TestSuite{
+			testSuites: []TestSuite{
+				{
 					Name: "Suite1",
 					TestCases: []TestCase{
 						{
@@ -121,28 +124,26 @@ func Test_exporter_ExportFlakyTestsEnvVar(t *testing.T) {
 		},
 		{
 			name: "Tests with the same Test ID exported only once",
-			testReport: TestReport{
-				TestSuites: []TestSuite{
-					{
-						Name: "Suite1",
-						TestCases: []TestCase{
-							{
-								ClassName: "com.example.TestClass1",
-								Name:      "testMethod1",
-								Failure:   &Failure{},
-								Flaky:     "true",
-							},
+			testSuites: []TestSuite{
+				{
+					Name: "Suite1",
+					TestCases: []TestCase{
+						{
+							ClassName: "com.example.TestClass1",
+							Name:      "testMethod1",
+							Failure:   &Failure{},
+							Flaky:     "true",
 						},
 					},
-					{
-						Name: "Suite1",
-						TestCases: []TestCase{
-							{
-								ClassName: "com.example.TestClass1",
-								Name:      "testMethod1",
-								Failure:   &Failure{},
-								Flaky:     "true",
-							},
+				},
+				{
+					Name: "Suite1",
+					TestCases: []TestCase{
+						{
+							ClassName: "com.example.TestClass1",
+							Name:      "testMethod1",
+							Failure:   &Failure{},
+							Flaky:     "true",
 						},
 					},
 				},
@@ -151,26 +152,24 @@ func Test_exporter_ExportFlakyTestsEnvVar(t *testing.T) {
 		},
 		{
 			name: "Flaky test cases env var size is limited",
-			testReport: TestReport{
-				TestSuites: []TestSuite{
-					{
-						Name: longTestSuitName1,
-						TestCases: []TestCase{
-							{
-								Name:    longTestCaseName1,
-								Failure: &Failure{},
-								Flaky:   "true",
-							},
+			testSuites: []TestSuite{
+				{
+					Name: longTestSuitName1,
+					TestCases: []TestCase{
+						{
+							Name:    longTestCaseName1,
+							Failure: &Failure{},
+							Flaky:   "true",
 						},
 					},
-					{
-						Name: "Suite2",
-						TestCases: []TestCase{
-							{
-								Name:    "testMethod1",
-								Failure: &Failure{},
-								Flaky:   "true",
-							},
+				},
+				{
+					Name: "Suite2",
+					TestCases: []TestCase{
+						{
+							Name:    "testMethod1",
+							Failure: &Failure{},
+							Flaky:   "true",
 						},
 					},
 				},
@@ -195,9 +194,7 @@ func Test_exporter_ExportFlakyTestsEnvVar(t *testing.T) {
 				outputExporter: mockOutputExporter,
 				logger:         logger,
 			}
-			flakyTestSuites := e.getFlakyTestSuites(tt.testReport)
-			err := e.exportFlakyTestCasesEnvVar(flakyTestSuites)
-
+			err := e.exportFlakyTestCasesEnvVar(tt.testSuites)
 			require.NoError(t, err)
 		})
 	}

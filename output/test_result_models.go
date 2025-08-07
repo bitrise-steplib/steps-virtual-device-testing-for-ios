@@ -4,12 +4,6 @@ import (
 	"encoding/xml"
 )
 
-// TestReport ...
-type TestReport struct {
-	XMLName   xml.Name  `xml:"testsuites"`
-	TestSuite TestSuite `xml:"testsuite"`
-}
-
 // TestSuite ...
 type TestSuite struct {
 	XMLName   xml.Name   `xml:"testsuite"`

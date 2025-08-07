@@ -44,13 +44,14 @@ func (e exporter) ExportTestResultsDir(dir string) error {
 func (e exporter) ExportFlakyTestsEnvVar(mergedTestResultXmlPths []string) error {
 	var flakyTestSuites []TestSuite
 	for _, testResultXMLPth := range mergedTestResultXmlPths {
-		testReport, err := e.convertTestReport(testResultXMLPth)
+		testSuite, err := e.convertTestReport(testResultXMLPth)
 		if err != nil {
 			return fmt.Errorf("failed to convert test report (%s): %w", testResultXMLPth, err)
 		}
 
-		testSuites := e.getFlakyTestSuites(testReport)
-		flakyTestSuites = append(flakyTestSuites, testSuites...)
+		if testSuite.Flakes > 0 {
+			flakyTestSuites = append(flakyTestSuites, testSuite)
+		}
 	}
 
 	if err := e.exportFlakyTestCasesEnvVar(flakyTestSuites); err != nil {
@@ -60,39 +61,18 @@ func (e exporter) ExportFlakyTestsEnvVar(mergedTestResultXmlPths []string) error
 	return nil
 }
 
-func (e exporter) convertTestReport(pth string) (TestReport, error) {
+func (e exporter) convertTestReport(pth string) (TestSuite, error) {
 	data, err := os.ReadFile(pth)
 	if err != nil {
-		return TestReport{}, err
+		return TestSuite{}, err
 	}
 
-	var testReport TestReport
-	if err := xml.Unmarshal(data, &testReport); err == nil {
-		return testReport, nil
+	var testSuite TestSuite
+	if err := xml.Unmarshal(data, &testSuite); err != nil {
+		return TestSuite{}, nil
 	}
 
-	return testReport, nil
-}
-
-func (e exporter) getFlakyTestSuites(testReport TestReport) []TestSuite {
-	var flakyTestSuites []TestSuite
-
-	var flakyTests []TestCase
-	for _, testCase := range testReport.TestSuite.TestCases {
-		if testCase.Flaky == "true" {
-			flakyTests = append(flakyTests, testCase)
-		}
-	}
-
-	if len(flakyTests) > 0 {
-		flakyTestSuites = append(flakyTestSuites, TestSuite{
-			XMLName:   testReport.TestSuite.XMLName,
-			Name:      testReport.TestSuite.Name,
-			TestCases: flakyTests,
-		})
-	}
-
-	return flakyTestSuites
+	return testSuite, nil
 }
 
 func (e exporter) exportFlakyTestCasesEnvVar(flakyTestSuites []TestSuite) error {
@@ -105,6 +85,10 @@ func (e exporter) exportFlakyTestCasesEnvVar(flakyTestSuites []TestSuite) error 
 
 	for _, testSuite := range flakyTestSuites {
 		for _, testCase := range testSuite.TestCases {
+			if testCase.Flaky != "true" {
+				continue
+			}
+
 			testCaseName := testCase.Name
 			if len(testCase.ClassName) > 0 {
 				testCaseName = fmt.Sprintf("%s.%s", testCase.ClassName, testCase.Name)
@@ -121,7 +105,9 @@ func (e exporter) exportFlakyTestCasesEnvVar(flakyTestSuites []TestSuite) error 
 		}
 	}
 
-	if len(flakyTestCases) > 0 {
+	if len(flakyTestCases) == 0 {
+		return nil
+	} else {
 		e.logger.TDonef("%d flaky test case(s) detected, exporting %s env var", len(flakyTestCases), flakyTestCasesEnvVarKey)
 	}
 
