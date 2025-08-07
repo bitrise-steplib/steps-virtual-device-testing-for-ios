@@ -385,13 +385,14 @@ func main() {
 				}
 
 				// per test run results: iphone13pro-16.6-en-portrait_test_result_0.xml
+				// rerun test results: iphone8-16.6-en-portrait-rerun_1_test_result_0.xml
 				// merged result: iphone13pro-16.6-en-portrait-test_results_merged.xml
 				if strings.HasSuffix(fileName, "test_results_merged.xml") {
 					mergedTestResultXmlPths = append(mergedTestResultXmlPths, pth)
 				}
 			}
 
-			log.TPrintf("%d test results XML(s) found", len(mergedTestResultXmlPths))
+			log.TPrintf("%d merged test results XML(s) found", len(mergedTestResultXmlPths))
 			log.TDonef("=> %d Test Assets downloaded", len(responseModel))
 
 			if err := outputExporter.ExportTestResultsDir(tempDir); err != nil {
