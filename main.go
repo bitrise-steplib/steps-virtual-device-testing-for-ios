@@ -283,7 +283,6 @@ func main() {
 					case "success":
 						outcome = colorstring.Green(outcome)
 					case "failure":
-						successful = false
 						if step.Outcome.FailureDetail != nil {
 							if step.Outcome.FailureDetail.Crashed {
 								outcome += "(Crashed)"
@@ -303,7 +302,6 @@ func main() {
 						}
 						outcome = colorstring.Red(outcome)
 					case "inconclusive":
-						successful = false
 						if step.Outcome.InconclusiveDetail != nil {
 							if step.Outcome.InconclusiveDetail.AbortedByUser {
 								outcome += "(AbortedByUser)"
@@ -314,7 +312,6 @@ func main() {
 						}
 						outcome = colorstring.Yellow(outcome)
 					case "skipped":
-						successful = false
 						if step.Outcome.SkippedDetail != nil {
 							if step.Outcome.SkippedDetail.IncompatibleAppVersion {
 								outcome += "(IncompatibleAppVersion)"
@@ -400,7 +397,7 @@ func main() {
 			if err := outputExporter.ExportTestResultsDir(tempDir); err != nil {
 				log.TWarnf("Failed to export test assets: %s", err)
 			} else if len(mergedTestResultXmlPths) > 0 {
-				if err := outputExporter.ExportFlakyTestsEnvVar(testResultXmlPth); err != nil {
+				if err := outputExporter.ExportFlakyTestsEnvVar(mergedTestResultXmlPths); err != nil {
 					log.TWarnf("Failed to export flaky tests env var: %s", err)
 				}
 			}
