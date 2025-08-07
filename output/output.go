@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/bitrise-io/go-utils/v2/log"
-	"github.com/bitrise-steplib/steps-deploy-to-bitrise-io/test/converters/junitxml"
 )
 
 const (
@@ -21,14 +20,12 @@ type Exporter interface {
 
 type exporter struct {
 	outputExporter OutputExporter
-	converter      junitxml.Converter
 	logger         log.Logger
 }
 
-func NewExporter(outputExporter OutputExporter, converter junitxml.Converter, logger log.Logger) Exporter {
+func NewExporter(outputExporter OutputExporter, logger log.Logger) Exporter {
 	return &exporter{
 		outputExporter: outputExporter,
-		converter:      converter,
 		logger:         logger,
 	}
 }

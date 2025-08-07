@@ -24,7 +24,6 @@ import (
 	"github.com/bitrise-io/go-utils/sliceutil"
 	"github.com/bitrise-io/go-utils/v2/env"
 	logv2 "github.com/bitrise-io/go-utils/v2/log"
-	"github.com/bitrise-steplib/steps-deploy-to-bitrise-io/test/converters/junitxml"
 	"github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/output"
 )
 
@@ -59,7 +58,7 @@ func main() {
 	envRepository := env.NewRepository()
 	inputParser := stepconf.NewInputParser(envRepository)
 	logger := logv2.NewLogger()
-	outputExporter := output.NewExporter(output.NewOutputExporter(), junitxml.Converter{}, logger)
+	outputExporter := output.NewExporter(output.NewOutputExporter(), logger)
 
 	var configs ConfigsModel
 	if err := inputParser.Parse(&configs); err != nil {
