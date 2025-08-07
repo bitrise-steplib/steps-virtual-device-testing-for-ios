@@ -215,5 +215,5 @@ outputs:
       - TestSuit_2.TestClass_1.TestName_1
       ...
       ```
-      
+
       To export `BITRISE_FLAKY_TEST_CASES` Step Output `download_test_results` Step Input should be set to `true`.
