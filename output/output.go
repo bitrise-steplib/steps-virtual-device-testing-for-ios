@@ -82,7 +82,6 @@ func (e exporter) exportFlakyTestCasesEnvVar(flakyTestSuites []TestSuite) error 
 
 	storedFlakyTestCases := map[string]bool{}
 	var flakyTestCases []string
-
 	for _, testSuite := range flakyTestSuites {
 		for _, testCase := range testSuite.TestCases {
 			if testCase.Flaky != "true" {

@@ -393,7 +393,7 @@ func main() {
 			}
 
 			log.TPrintf("%d merged test results XML(s) found", len(mergedTestResultXmlPths))
-			log.TDonef("=> %d Test Assets downloaded", len(responseModel))
+			log.TDonef("=> %d test Assets downloaded", len(responseModel))
 
 			if err := outputExporter.ExportTestResultsDir(tempDir); err != nil {
 				log.TWarnf("Failed to export test assets: %s", err)
