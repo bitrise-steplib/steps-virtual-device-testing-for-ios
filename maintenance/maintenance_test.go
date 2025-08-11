@@ -11,7 +11,6 @@ import (
 	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-io/go-utils/pathutil"
-	"github.com/pkg/errors"
 )
 
 func TestDeviceList(t *testing.T) {
@@ -36,7 +35,7 @@ func checkDeviceList() error {
 
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		return errors.Wrap(err, out)
+		return fmt.Errorf("out: %s, err: %w", out, err)
 	}
 
 	if out == deviceList {
@@ -47,7 +46,7 @@ func checkDeviceList() error {
 
 	outFormatted, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		return errors.Wrap(err, out)
+		return fmt.Errorf("out: %s, err: %w", out, err)
 	}
 
 	// Your gcloud sdk version must be 417.0.0 or greater for this command to succeed.
@@ -55,7 +54,7 @@ func checkDeviceList() error {
 
 	capacityFormatted, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		return errors.Wrap(err, out)
+		return fmt.Errorf("out: %s, err: %w", out, err)
 	}
 
 	fmt.Println("Fresh devices list to use in this maintenance test:")
@@ -106,8 +105,11 @@ func signIn() error {
 		"--project", servAcc.ProjectID)
 
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
+	if err != nil {
+		return fmt.Errorf("out: %s, err: %w", out, err)
+	}
 
-	return errors.Wrap(err, out)
+	return nil
 }
 
 func checkAccounts() (bool, error) {
@@ -225,7 +227,7 @@ deviceCapabilities[26]:           telephony
 formFactor:                       PHONE
 id:                               iphone13pro
 name:                             iPhone 13 Pro
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
+perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_HIGH
 perVersionInfo[0].versionId:      15.7
 perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_HIGH
 perVersionInfo[1].versionId:      16.6
@@ -303,7 +305,7 @@ deviceCapabilities[26]:           telephony
 formFactor:                       PHONE
 id:                               iphone15
 name:                             iPhone 15
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_LOW
+perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
 perVersionInfo[0].versionId:      18.0
 screenDensity:                    460
 screenX:                          1170
@@ -381,7 +383,7 @@ id:                               iphone8
 name:                             iPhone 8
 perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
 perVersionInfo[0].versionId:      15.7
-perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_MEDIUM
+perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_HIGH
 perVersionInfo[1].versionId:      16.6
 screenDensity:                    326
 screenX:                          750

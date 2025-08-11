@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="" tests="1" failures="0" flakes="1" errors="0" skipped="0" time="0.014" hostname="localhost">
+  <testcase name="testRandomlyFail" classname="BullsEyeFailingTests.BullsEyeRandomlyFailingTests" time="0.014" flaky="true">
+    <failure>Failure at /Users/vagrant/git/BullsEyeFailingTests/BullsEyeFailingTests.swift:127 - Assertion Failure at BullsEyeFailingTests.swift:127: failed
+      </failure>
+  </testcase>
+</testsuite>

@@ -17,13 +17,14 @@ import (
 	"google.golang.org/api/testing/v1"
 	toolresults "google.golang.org/api/toolresults/v1beta3"
 
-	"github.com/bitrise-io/go-steputils/tools"
 	"github.com/bitrise-io/go-steputils/v2/stepconf"
 	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-io/go-utils/sliceutil"
 	"github.com/bitrise-io/go-utils/v2/env"
+	logv2 "github.com/bitrise-io/go-utils/v2/log"
+	"github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/output"
 )
 
 // ConfigsModel ...
@@ -56,6 +57,8 @@ func failf(f string, v ...interface{}) {
 func main() {
 	envRepository := env.NewRepository()
 	inputParser := stepconf.NewInputParser(envRepository)
+	logger := logv2.NewLogger()
+	outputExporter := output.NewExporter(output.NewOutputExporter(), logger)
 
 	var configs ConfigsModel
 	if err := inputParser.Parse(&configs); err != nil {
@@ -64,8 +67,6 @@ func main() {
 
 	stepconf.Print(configs)
 	fmt.Println()
-
-	successful := true
 
 	log.TInfof("Upload IPAs")
 	{
@@ -176,6 +177,8 @@ func main() {
 
 	fmt.Println()
 	log.TInfof("Waiting for test results")
+
+	dimensionToStatus := map[string]bool{}
 	{
 		finished := false
 		printedLogs := []string{}
@@ -257,14 +260,28 @@ func main() {
 
 				for _, step := range responseModel.Steps {
 					dimensions := createDimensions(*step)
-
 					outcome := step.Outcome.Summary
+
+					dimensionID := fmt.Sprintf("%s.%s.%s.%s", dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"])
+					isSuccess := true
+					if outcome == "failure" || outcome == "inconclusive" || outcome == "skipped" {
+						isSuccess = false
+					}
+
+					_, exists := dimensionToStatus[dimensionID]
+					if exists {
+						if isSuccess {
+							// Mark the dimension as successful if at least one step (test run) was successful.
+							dimensionToStatus[dimensionID] = true
+						}
+					} else {
+						dimensionToStatus[dimensionID] = isSuccess
+					}
 
 					switch outcome {
 					case "success":
 						outcome = colorstring.Green(outcome)
 					case "failure":
-						successful = false
 						if step.Outcome.FailureDetail != nil {
 							if step.Outcome.FailureDetail.Crashed {
 								outcome += "(Crashed)"
@@ -284,7 +301,6 @@ func main() {
 						}
 						outcome = colorstring.Red(outcome)
 					case "inconclusive":
-						successful = false
 						if step.Outcome.InconclusiveDetail != nil {
 							if step.Outcome.InconclusiveDetail.AbortedByUser {
 								outcome += "(AbortedByUser)"
@@ -295,7 +311,6 @@ func main() {
 						}
 						outcome = colorstring.Yellow(outcome)
 					case "skipped":
-						successful = false
 						if step.Outcome.SkippedDetail != nil {
 							if step.Outcome.SkippedDetail.IncompatibleAppVersion {
 								outcome += "(IncompatibleAppVersion)"
@@ -361,22 +376,43 @@ func main() {
 				failf("Failed to create temp dir, error: %s", err)
 			}
 
+			var mergedTestResultXmlPths []string
 			for fileName, fileURL := range responseModel {
-				if err := downloadFile(fileURL, filepath.Join(tempDir, fileName)); err != nil {
+				pth := filepath.Join(tempDir, fileName)
+				if err := downloadFile(fileURL, pth); err != nil {
 					failf("Failed to download file, error: %s", err)
+				}
+
+				// per test run results: iphone13pro-16.6-en-portrait_test_result_0.xml
+				// rerun test results: iphone8-16.6-en-portrait-rerun_1_test_result_0.xml
+				// merged result: iphone13pro-16.6-en-portrait-test_results_merged.xml
+				if strings.HasSuffix(fileName, "test_results_merged.xml") {
+					mergedTestResultXmlPths = append(mergedTestResultXmlPths, pth)
 				}
 			}
 
-			log.TDonef("=> Assets downloaded")
-			if err := tools.ExportEnvironmentWithEnvman("VDTESTING_DOWNLOADED_FILES_DIR", tempDir); err != nil {
-				log.Warnf("Failed to export environment (VDTESTING_DOWNLOADED_FILES_DIR), error: %s", err)
-			} else {
-				log.Printf("The downloaded test assets path (%s) is exported to the VDTESTING_DOWNLOADED_FILES_DIR environment variable.", tempDir)
+			log.TPrintf("%d merged test results XML(s) found", len(mergedTestResultXmlPths))
+			log.TDonef("=> %d test Assets downloaded", len(responseModel))
+
+			if err := outputExporter.ExportTestResultsDir(tempDir); err != nil {
+				log.TWarnf("Failed to export test assets: %s", err)
+			} else if len(mergedTestResultXmlPths) > 0 {
+				if err := outputExporter.ExportFlakyTestsEnvVar(mergedTestResultXmlPths); err != nil {
+					log.TWarnf("Failed to export flaky tests env var: %s", err)
+				}
 			}
 		}
 	}
 
-	if !successful {
+	var failedTestRuns []string
+	for dimension, isSuccess := range dimensionToStatus {
+		if !isSuccess {
+			failedTestRuns = append(failedTestRuns, dimension)
+		}
+	}
+
+	if len(failedTestRuns) > 0 {
+		log.Errorf("%d test run(s) failed", len(failedTestRuns))
 		os.Exit(1)
 	}
 }
