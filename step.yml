@@ -146,6 +146,16 @@ inputs:
       └─────────────┴────────────────────────┴───────────────┴─────────────────┘
       ```
     is_required: true
+- num_flaky_test_attempts: "0"
+  opts:
+    title: Number of times a test execution is reattempted
+    summary: Specifies the number of times a test execution should be reattempted if one or more of its test cases fail for any reason.
+    description: |-
+      Specifies the number of times a test execution should be reattempted if one or more of its test cases fail for any reason.
+
+      An execution that initially fails but succeeds on any reattempt is reported as FLAKY.
+      The maximum number of reruns allowed is 10. (Default: 0, which implies no reruns.)
+    is_required: true
 - test_timeout: 900
   opts:
     category: Debug
@@ -166,17 +176,9 @@ inputs:
     value_options:
     - "false"
     - "true"
-- num_flaky_test_attempts: "0"
-  opts:
-    title: Number of times a test execution is reattempted
-    summary: Specifies the number of times a test execution should be reattempted if one or more of its test cases fail for any reason.
-    description: |-
-      Specifies the number of times a test execution should be reattempted if one or more of its test cases fail for any reason. An execution that
-      initially fails but succeeds on any reattempt is reported as FLAKY.
-      The maximum number of reruns allowed is 10. (Default: 0, which implies no reruns.)
-    is_required: true
 - api_base_url: https://vdt.bitrise.io/test
   opts:
+    category: Debug
     title: Test API's base URL
     summary: The URL where test API is accessible.
     description: |
@@ -185,6 +187,7 @@ inputs:
     is_dont_change_value: true
 - api_token: $ADDON_VDTESTING_API_TOKEN
   opts:
+    category: Debug
     title: API Token
     summary: The token required to authenticate with the API.
     description: |
