@@ -97,7 +97,7 @@ inputs:
       ┌─────────────┬────────────────────────┬───────────────┬─────────────────┐
       │   MODEL_ID  │       MODEL_NAME       │ OS_VERSION_ID │ DEVICE_CAPACITY │
       ├─────────────┼────────────────────────┼───────────────┼─────────────────┤
-      │ ipad10      │ iPad (10th generation) │ 16.6          │ Low             │
+      │ ipad10      │ iPad (10th generation) │ 16.6          │ Medium          │
       │ iphone11pro │ iPhone 11 Pro          │ 16.6          │ High            │
       │ iphone13pro │ iPhone 13 Pro          │ 15.7          │ High            │
       │ iphone13pro │ iPhone 13 Pro          │ 16.6          │ High            │
@@ -134,7 +134,7 @@ inputs:
       ┌─────────────┬────────────────────────┬───────────────┬─────────────────┐
       │   MODEL_ID  │       MODEL_NAME       │ OS_VERSION_ID │ DEVICE_CAPACITY │
       ├─────────────┼────────────────────────┼───────────────┼─────────────────┤
-      │ ipad10      │ iPad (10th generation) │ 16.6          │ Low             │
+      │ ipad10      │ iPad (10th generation) │ 16.6          │ Medium          │
       │ iphone11pro │ iPhone 11 Pro          │ 16.6          │ High            │
       │ iphone13pro │ iPhone 13 Pro          │ 15.7          │ High            │
       │ iphone13pro │ iPhone 13 Pro          │ 16.6          │ High            │
@@ -145,6 +145,16 @@ inputs:
       │ iphone8     │ iPhone 8               │ 16.6          │ High            │
       └─────────────┴────────────────────────┴───────────────┴─────────────────┘
       ```
+    is_required: true
+- num_flaky_test_attempts: "0"
+  opts:
+    title: Number of times a test execution is reattempted
+    summary: Specifies the number of times a test execution should be reattempted if one or more of its test cases fail for any reason.
+    description: |-
+      Specifies the number of times a test execution should be reattempted if one or more of its test cases fail for any reason.
+
+      An execution that initially fails but succeeds on any reattempt is reported as FLAKY.
+      The maximum number of reruns allowed is 10. (Default: 0, which implies no reruns.)
     is_required: true
 - test_timeout: 900
   opts:
@@ -166,17 +176,9 @@ inputs:
     value_options:
     - "false"
     - "true"
-- num_flaky_test_attempts: "0"
-  opts:
-    title: Number of times a test execution is reattempted
-    summary: Specifies the number of times a test execution should be reattempted if one or more of its test cases fail for any reason.
-    description: |-
-      Specifies the number of times a test execution should be reattempted if one or more of its test cases fail for any reason. An execution that
-      initially fails but succeeds on any reattempt is reported as FLAKY.
-      The maximum number of reruns allowed is 10. (Default: 0, which implies no reruns.)
-    is_required: true
 - api_base_url: https://vdt.bitrise.io/test
   opts:
+    category: Debug
     title: Test API's base URL
     summary: The URL where test API is accessible.
     description: |
@@ -185,6 +187,7 @@ inputs:
     is_dont_change_value: true
 - api_token: $ADDON_VDTESTING_API_TOKEN
   opts:
+    category: Debug
     title: API Token
     summary: The token required to authenticate with the API.
     description: |

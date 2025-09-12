@@ -153,7 +153,7 @@ deviceCapabilities[20]:           arkit
 formFactor:                       TABLET
 id:                               ipad10
 name:                             iPad (10th generation)
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_LOW
+perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
 perVersionInfo[0].versionId:      16.6
 screenDensity:                    264
 screenX:                          1640
