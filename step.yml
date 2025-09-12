@@ -97,7 +97,7 @@ inputs:
       ┌─────────────┬────────────────────────┬───────────────┬─────────────────┐
       │   MODEL_ID  │       MODEL_NAME       │ OS_VERSION_ID │ DEVICE_CAPACITY │
       ├─────────────┼────────────────────────┼───────────────┼─────────────────┤
-      │ ipad10      │ iPad (10th generation) │ 16.6          │ Low             │
+      │ ipad10      │ iPad (10th generation) │ 16.6          │ Medium          │
       │ iphone11pro │ iPhone 11 Pro          │ 16.6          │ High            │
       │ iphone13pro │ iPhone 13 Pro          │ 15.7          │ High            │
       │ iphone13pro │ iPhone 13 Pro          │ 16.6          │ High            │
@@ -134,7 +134,7 @@ inputs:
       ┌─────────────┬────────────────────────┬───────────────┬─────────────────┐
       │   MODEL_ID  │       MODEL_NAME       │ OS_VERSION_ID │ DEVICE_CAPACITY │
       ├─────────────┼────────────────────────┼───────────────┼─────────────────┤
-      │ ipad10      │ iPad (10th generation) │ 16.6          │ Low             │
+      │ ipad10      │ iPad (10th generation) │ 16.6          │ Medium          │
       │ iphone11pro │ iPhone 11 Pro          │ 16.6          │ High            │
       │ iphone13pro │ iPhone 13 Pro          │ 15.7          │ High            │
       │ iphone13pro │ iPhone 13 Pro          │ 16.6          │ High            │
