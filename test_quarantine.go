@@ -15,15 +15,15 @@ import (
 
 /*
 parseQuarantinedTests converts the Bitrise quarantined tests JSON input ($BITRISE_QUARANTINED_TESTS_JSON)
-to xctestrun file's SkipTestIdentifiers format: TestTarget/TestClass/TestMethod
+to xctestrun file's SkipTestIdentifiers format: TestClass/TestMethod (`()` suffix removed) mapped by TestTargets.
 */
-func parseQuarantinedTests(quarantinedTestsInput string) ([]string, error) {
+func parseQuarantinedTests(quarantinedTestsInput string) (map[string][]string, error) {
 	quarantinedTests, err := testquarantine.ParseQuarantinedTests(quarantinedTestsInput)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse quarantined tests input: %w", err)
 	}
 
-	var quarantinedTestsList []string
+	skippedTestsByTarget := map[string][]string{}
 	for _, qt := range quarantinedTests {
 		if len(qt.TestSuiteName) == 0 || qt.TestSuiteName[0] == "" || qt.ClassName == "" || qt.TestCaseName == "" {
 			continue
@@ -31,15 +31,17 @@ func parseQuarantinedTests(quarantinedTestsInput string) ([]string, error) {
 
 		testTarget := qt.TestSuiteName[0]
 		testClass := qt.ClassName
-		testMethod := qt.TestCaseName
+		testMethod := strings.TrimSuffix(qt.TestCaseName, "()")
 
-		quarantinedTestsList = append(quarantinedTestsList, fmt.Sprintf("%s/%s/%s", testTarget, testClass, testMethod))
+		skippedTests := skippedTestsByTarget[testTarget]
+		skippedTests = append(skippedTests, fmt.Sprintf("%s/%s", testClass, testMethod))
+		skippedTestsByTarget[testTarget] = skippedTests
 	}
 
-	return quarantinedTestsList, nil
+	return skippedTestsByTarget, nil
 }
 
-func addQuarantinedTestsToTestBundle(testBundleZipPth string, quarantinedTestsList []string) (string, error) {
+func addQuarantinedTestsToTestBundle(testBundleZipPth string, skippedTestByTarget map[string][]string) (string, error) {
 	tmpTestBundlePth, err := unzipTestBundle(testBundleZipPth)
 	if err != nil {
 		return "", err
@@ -56,7 +58,7 @@ func addQuarantinedTestsToTestBundle(testBundleZipPth string, quarantinedTestsLi
 		}
 
 		xctestrunPth := filepath.Join(tmpTestBundlePth, entry.Name())
-		if err := addQuarantinedTestsToXctestrun(xctestrunPth, quarantinedTestsList); err != nil {
+		if err := addQuarantinedTestsToXctestrun(xctestrunPth, skippedTestByTarget); err != nil {
 			return "", fmt.Errorf("failed to add quarantined tests to xctestrun file (%s): %w", xctestrunPth, err)
 		}
 	}
@@ -153,7 +155,6 @@ func writeXctestrun(xctestrunPth string, xctestrun map[string]any, format int) e
 		return fmt.Errorf("failed to marshal xctestrun plist: %w", err)
 	}
 
-	// TODO: backup and restore original xctestrun file
 	if err := os.WriteFile(xctestrunPth, updatedXctestrunContent, 0644); err != nil {
 		return fmt.Errorf("failed to write updated xctestrun file: %w", err)
 	}
@@ -161,13 +162,13 @@ func writeXctestrun(xctestrunPth string, xctestrun map[string]any, format int) e
 	return nil
 }
 
-func addQuarantinedTestsToXctestrun(xctestrunPth string, skippedTestIdentifiersToAdd []string) error {
+func addQuarantinedTestsToXctestrun(xctestrunPth string, skippedTestByTarget map[string][]string) error {
 	xctestrun, plistFormat, err := parseXctestrun(xctestrunPth)
 	if err != nil {
 		return err
 	}
 
-	updatedXctestrun, err := addSkippedTestsToXctestrun(xctestrun, skippedTestIdentifiersToAdd)
+	updatedXctestrun, err := addSkippedTestsToXctestrun(xctestrun, skippedTestByTarget)
 	if err != nil {
 		return err
 	}
@@ -179,7 +180,7 @@ func addQuarantinedTestsToXctestrun(xctestrunPth string, skippedTestIdentifiersT
 	return nil
 }
 
-func addSkippedTestsToXctestrun(xctestrun map[string]any, skippedTestIdentifiersToAdd []string) (map[string]any, error) {
+func addSkippedTestsToXctestrun(xctestrun map[string]any, skippedTestByTarget map[string][]string) (map[string]any, error) {
 	testConfigurationsRaw, ok := xctestrun["TestConfigurations"]
 	if !ok {
 		return nil, fmt.Errorf("TestConfigurations not found in xctestrun")
@@ -212,16 +213,28 @@ func addSkippedTestsToXctestrun(xctestrun map[string]any, skippedTestIdentifiers
 				return nil, fmt.Errorf("invalid test target format in test configuration")
 			}
 
-			var skipTestIdentifiers []string
+			blueprintNameRaw, ok := testTarget["BlueprintName"]
+			if !ok {
+				return nil, fmt.Errorf("BlueprintName not found in test target")
+			}
+			blueprintName, ok := blueprintNameRaw.(string)
+			skippedTestsToAdd, ok := skippedTestByTarget[blueprintName]
+			if !ok {
+				continue
+			}
+
+			var skipTestIdentifiers []interface{}
 			skipTestIdentifiersRaw, ok := testTarget["SkipTestIdentifiers"]
 			if ok {
-				skipTestIdentifiers, ok = skipTestIdentifiersRaw.([]string)
+				skipTestIdentifiers, ok = skipTestIdentifiersRaw.([]interface{})
 				if !ok {
 					return nil, fmt.Errorf("invalid SkipTestIdentifiers format in test target")
 				}
 			}
 
-			skipTestIdentifiers = append(skipTestIdentifiers, skippedTestIdentifiersToAdd...)
+			for _, skippedTestsToAddItem := range skippedTestsToAdd {
+				skipTestIdentifiers = append(skipTestIdentifiers, skippedTestsToAddItem)
+			}
 
 			testTarget["SkipTestIdentifiers"] = skipTestIdentifiers
 			testTargetsSlice[testTargetIdx] = testTarget
