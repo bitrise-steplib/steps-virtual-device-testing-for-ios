@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	plist "github.com/bitrise-io/go-plist"
+	"github.com/bitrise-io/go-plist"
 	"github.com/bitrise-io/go-steputils/v2/testquarantine"
 	"github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-utils/v2/env"
