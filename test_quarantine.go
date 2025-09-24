@@ -217,7 +217,12 @@ func addSkippedTestsToXctestrun(xctestrun map[string]any, skippedTestByTarget ma
 			if !ok {
 				return nil, fmt.Errorf("BlueprintName not found in test target")
 			}
+
 			blueprintName, ok := blueprintNameRaw.(string)
+			if !ok {
+				return nil, fmt.Errorf("invalid BlueprintName format in test target")
+			}
+
 			skippedTestsToAdd, ok := skippedTestByTarget[blueprintName]
 			if !ok {
 				continue

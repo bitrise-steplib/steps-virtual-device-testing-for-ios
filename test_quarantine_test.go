@@ -100,6 +100,8 @@ func getSkippedTests(xctestrun map[string]any, target string, t *testing.T) []st
 			require.True(t, ok)
 
 			blueprintName, ok := blueprintNameRaw.(string)
+			require.True(t, ok)
+
 			if blueprintName != target {
 				continue
 			}
