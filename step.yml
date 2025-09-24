@@ -105,7 +105,7 @@ inputs:
       │ iphone15    │ iPhone 15              │ 18.0          │ Medium          │
       │ iphone15pro │ iPhone 15 Pro          │ 18.0          │ Medium          │
       │ iphone8     │ iPhone 8               │ 15.7          │ Medium          │
-      │ iphone8     │ iPhone 8               │ 16.6          │ High            │
+      │ iphone8     │ iPhone 8               │ 16.6          │ Medium          │
       └─────────────┴────────────────────────┴───────────────┴─────────────────┘
       ```
     summary: |
@@ -142,7 +142,7 @@ inputs:
       │ iphone15    │ iPhone 15              │ 18.0          │ Medium          │
       │ iphone15pro │ iPhone 15 Pro          │ 18.0          │ Medium          │
       │ iphone8     │ iPhone 8               │ 15.7          │ Medium          │
-      │ iphone8     │ iPhone 8               │ 16.6          │ High            │
+      │ iphone8     │ iPhone 8               │ 16.6          │ Medium          │
       └─────────────┴────────────────────────┴───────────────┴─────────────────┘
       ```
     is_required: true

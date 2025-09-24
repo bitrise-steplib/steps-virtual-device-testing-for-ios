@@ -383,7 +383,7 @@ id:                               iphone8
 name:                             iPhone 8
 perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
 perVersionInfo[0].versionId:      15.7
-perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_HIGH
+perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_MEDIUM
 perVersionInfo[1].versionId:      16.6
 screenDensity:                    326
 screenX:                          750
