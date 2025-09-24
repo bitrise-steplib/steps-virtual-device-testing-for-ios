@@ -71,7 +71,7 @@ func main() {
 	// add quarantined tests to xctestrun
 	if configs.QuarantinedTests != "" {
 		fmt.Println()
-		log.Infof("Adding quarantined tests to xctestrun")
+		log.TInfof("Adding quarantined tests to xctestrun")
 
 		quarantinedTestsList, err := parseQuarantinedTests(configs.QuarantinedTests)
 		if err != nil {
@@ -79,9 +79,9 @@ func main() {
 		}
 
 		if len(quarantinedTestsList) == 0 {
-			log.Printf("No quarantined tests found")
+			log.TPrintf("No quarantined tests found")
 		} else {
-			log.Printf("%d quarantined tests found", len(quarantinedTestsList))
+			log.TPrintf("%d quarantined tests found", len(quarantinedTestsList))
 
 			updatedTestBundleZipPth, err := addQuarantinedTestsToTestBundle(configs.ZipPath, quarantinedTestsList)
 			if err != nil {
@@ -89,7 +89,7 @@ func main() {
 			}
 
 			configs.ZipPath = updatedTestBundleZipPth
-			log.Donef("=> Quarantined tests added to xctestrun")
+			log.TDonef("=> Quarantined tests added to xctestrun")
 		}
 	}
 
