@@ -57,8 +57,8 @@ github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAE
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/bitrise-io/go-plist v0.0.0-20210301100253-4b1a112ccd10 h1:/2OyBFI7GjYKexBPcfTPvKFz8Ks7qYzkkz2SQ8aiJgc=
 github.com/bitrise-io/go-plist v0.0.0-20210301100253-4b1a112ccd10/go.mod h1:pARutiL3kEuRLV3JvswidvfCj+9Y3qMZtji2BDqLFsA=
-github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.39.0.20250923143720-ba275d37a404 h1:sLO1o60Z46LbV98U5lZoU8WlI5ChUfsJQDsgOSmtJio=
-github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.39.0.20250923143720-ba275d37a404/go.mod h1:UNKPd7zsUF7gtOpW/G7W7c+T5W7o5kPtAG3/CZPznjw=
+github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.40 h1:6wJkZjfGPbIIARvCzyv8Dw0Bk2WWUPlgnhzBqsaeiHQ=
+github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.40/go.mod h1:UNKPd7zsUF7gtOpW/G7W7c+T5W7o5kPtAG3/CZPznjw=
 github.com/bitrise-io/go-utils v1.0.13 h1:1QENhTS/JlKH9F7+/nB+TtbTcor6jGrE6cQ4CJWfp5U=
 github.com/bitrise-io/go-utils v1.0.13/go.mod h1:ZY1DI+fEpZuFpO9szgDeICM4QbqoWVt0RSY3tRI1heY=
 github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.26 h1:meDTxqONXlQv2JmOcEbJj5Wx7WcuwpHRsP5MUob1NCQ=

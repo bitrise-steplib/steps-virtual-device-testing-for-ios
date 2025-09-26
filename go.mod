@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/bitrise-io/go-plist v0.0.0-20210301100253-4b1a112ccd10
-	github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.39.0.20250923143720-ba275d37a404
+	github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.40
 	github.com/bitrise-io/go-utils v1.0.13
 	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.26
 	github.com/stretchr/testify v1.10.0
