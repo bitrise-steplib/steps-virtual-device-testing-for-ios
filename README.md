@@ -59,7 +59,7 @@ You can also run this step directly with [Bitrise CLI](https://github.com/bitris
 | `download_test_results` | If this input is set to `true` all files generated in the test run will be downloaded. Otherwise, no any file will be downloaded.  | required | `false` |
 | `api_base_url` | The URL where test API is accessible.  | required | `https://vdt.bitrise.io/test` |
 | `api_token` | The token required to authenticate with the API.  | required, sensitive | `$ADDON_VDTESTING_API_TOKEN` |
-| `quarantined_tests` | A JSON array of quarantined tests. |  | `$BITRISE_QUARANTINED_TESTS_JSON` |
+| `quarantined_tests` | JSON list of tests added to quarantine on Bitrise.io, quarantined tests are excluded from test runs. |  | `$BITRISE_QUARANTINED_TESTS_JSON` |
 </details>
 
 <details>
