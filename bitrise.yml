@@ -41,6 +41,16 @@ workflows:
         inputs:
         - download_test_results: "true"
         - num_flaky_test_attempts: 2
+        - quarantined_tests: |-
+            [
+              {
+                "testCaseName": "testGameStyleSwitch()",
+                "testSuiteName": [
+                  "BullsEyeUITests"
+                ],
+                "className": "BullsEyeUITests2"
+              }
+            ]
     - script:
         title: Output check
         inputs:
@@ -52,6 +62,21 @@ workflows:
               exit 1
             else
               echo "VDTESTING_DOWNLOADED_FILES_DIR: $VDTESTING_DOWNLOADED_FILES_DIR"
+            fi
+    - script:
+        title: Check if skipped tests are really skipped
+        inputs:
+        - content: |
+            test_results_xml_path="$VDTESTING_DOWNLOADED_FILES_DIR/iphone13pro-16.6-en-portrait-test_results_merged.xml"
+            if [ ! -f "$test_results_xml_path" ]; then
+              echo "No test results xml found at: $test_results_xml_path"
+              exit 1
+            fi
+            if grep -q '<testcase name="testGameStyleSwitch" classname="BullsEyeUITests.BullsEyeUITests2"' "$test_results_xml_path"; then
+              echo "The skipped test was found in the test results xml."
+              exit 1
+            else
+              echo "The skipped test was NOT found in the test results xml."
             fi
     - deploy-to-bitrise-io@2:
         inputs:

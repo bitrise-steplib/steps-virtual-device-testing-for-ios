@@ -41,6 +41,7 @@ type ConfigsModel struct {
 	TestTimeout          float64 `env:"test_timeout,range[0..2700]"`
 	DownloadTestResults  bool    `env:"download_test_results,opt[false,true]"`
 	NumFlakyTestAttempts int     `env:"num_flaky_test_attempts,range[0..10]"`
+	QuarantinedTests     string  `env:"quarantined_tests"`
 }
 
 // UploadURLRequest ...
@@ -66,8 +67,33 @@ func main() {
 	}
 
 	stepconf.Print(configs)
-	fmt.Println()
 
+	// add quarantined tests to xctestrun
+	if configs.QuarantinedTests != "" {
+		fmt.Println()
+		log.TInfof("Adding quarantined tests to xctestrun")
+
+		quarantinedTestsList, err := parseQuarantinedTests(configs.QuarantinedTests)
+		if err != nil {
+			failf("Failed to parse quarantined tests: %s", err)
+		}
+
+		if len(quarantinedTestsList) == 0 {
+			log.TPrintf("No quarantined tests found")
+		} else {
+			log.TPrintf("%d quarantined tests found", len(quarantinedTestsList))
+
+			updatedTestBundleZipPth, err := addQuarantinedTestsToTestBundle(configs.ZipPath, quarantinedTestsList)
+			if err != nil {
+				failf("Failed to add quarantined tests to xctestrun: %s", err)
+			}
+
+			configs.ZipPath = updatedTestBundleZipPth
+			log.TDonef("=> Quarantined tests added to xctestrun")
+		}
+	}
+
+	fmt.Println()
 	log.TInfof("Upload IPAs")
 	{
 		url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
