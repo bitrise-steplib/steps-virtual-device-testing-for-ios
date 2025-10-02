@@ -287,6 +287,25 @@ func main() {
 				for _, step := range responseModel.Steps {
 					dimensions := createDimensions(*step)
 					outcome := step.Outcome.Summary
+					if outcome == "failure" && step.TestExecutionStep != nil && step.TestExecutionStep.TestSuiteOverviews != nil {
+						// If the outcome is failure, but there are no failed tests, then the outcome is success.
+						hasAnyFailure := false
+						for _, overview := range step.TestExecutionStep.TestSuiteOverviews {
+							if overview == nil {
+								// Should not happen, don't patch outcome.
+								hasAnyFailure = true
+								break
+							}
+
+							if overview.FailureCount > 0 {
+								hasAnyFailure = true
+								break
+							}
+						}
+						if !hasAnyFailure {
+							outcome = "success"
+						}
+					}
 
 					dimensionID := fmt.Sprintf("%s.%s.%s.%s", dimensions["Model"], dimensions["Version"], dimensions["Orientation"], dimensions["Locale"])
 					isSuccess := true
