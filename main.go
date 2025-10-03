@@ -297,7 +297,7 @@ func main() {
 								break
 							}
 
-							if overview.FailureCount > 0 {
+							if overview.FailureCount > 0 || overview.ErrorCount > 0 {
 								hasAnyFailure = true
 								break
 							}
