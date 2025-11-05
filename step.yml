@@ -35,11 +35,12 @@ website: https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios
 source_code_url: https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios
 support_url: https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/issues
 project_type_tags:
-- ios
 - cordova
-- ionic
-- react-native
 - flutter
+- ionic
+- ios
+- kotlin-multiplatform
+- react-native
 
 type_tags:
 - test
