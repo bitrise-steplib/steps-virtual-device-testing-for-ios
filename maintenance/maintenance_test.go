@@ -236,7 +236,8 @@ screenX:                          1170
 screenY:                          2532
 supportedVersionIds[0]:           15.7
 supportedVersionIds[1]:           16.6
-tags[0]:                          default
+tags[0]:                          deprecated=15.7
+tags[1]:                          deprecated=16.6
 ---
 deviceCapabilities[0]:            accelerometer
 deviceCapabilities[1]:            arm64
@@ -311,7 +312,7 @@ screenDensity:                    460
 screenX:                          1170
 screenY:                          2532
 supportedVersionIds[0]:           18.0
-tags[0]:                          preview=18.0
+tags[0]:                          deprecated=18.0
 ---
 deviceCapabilities[0]:            accelerometer
 deviceCapabilities[1]:            arm64
@@ -349,7 +350,45 @@ screenDensity:                    460
 screenX:                          1179
 screenY:                          2556
 supportedVersionIds[0]:           18.0
-tags[0]:                          preview=18.0
+tags[0]:                          deprecated=18.0
+---
+deviceCapabilities[0]:            accelerometer
+deviceCapabilities[1]:            arm64
+deviceCapabilities[2]:            armv6
+deviceCapabilities[3]:            armv7
+deviceCapabilities[4]:            auto-focus-camera
+deviceCapabilities[5]:            bluetooth-le
+deviceCapabilities[6]:            front-facing-camera
+deviceCapabilities[7]:            gamekit
+deviceCapabilities[8]:            gyroscope
+deviceCapabilities[9]:            location-services
+deviceCapabilities[10]:           magnetometer
+deviceCapabilities[11]:           metal
+deviceCapabilities[12]:           microphone
+deviceCapabilities[13]:           opengles-1
+deviceCapabilities[14]:           opengles-2
+deviceCapabilities[15]:           opengles-3
+deviceCapabilities[16]:           peer-peer
+deviceCapabilities[17]:           still-camera
+deviceCapabilities[18]:           video-camera
+deviceCapabilities[19]:           wifi
+deviceCapabilities[20]:           arkit
+deviceCapabilities[21]:           camera-flash
+deviceCapabilities[22]:           gps
+deviceCapabilities[23]:           healthkit
+deviceCapabilities[24]:           nfc
+deviceCapabilities[25]:           sms
+deviceCapabilities[26]:           telephony
+formFactor:                       PHONE
+id:                               iphone16pro
+name:                             iPhone 16 Pro
+perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_HIGH
+perVersionInfo[0].versionId:      18.3
+screenDensity:                    460
+screenX:                          1206
+screenY:                          2622
+supportedVersionIds[0]:           18.3
+tags[0]:                          default
 ---
 deviceCapabilities[0]:            accelerometer
 deviceCapabilities[1]:            arm64
@@ -389,4 +428,41 @@ screenDensity:                    326
 screenX:                          750
 screenY:                          1334
 supportedVersionIds[0]:           15.7
-supportedVersionIds[1]:           16.6`
+supportedVersionIds[1]:           16.6
+tags[0]:                          deprecated=15.7
+---
+deviceCapabilities[0]:            accelerometer
+deviceCapabilities[1]:            arm64
+deviceCapabilities[2]:            armv6
+deviceCapabilities[3]:            armv7
+deviceCapabilities[4]:            auto-focus-camera
+deviceCapabilities[5]:            bluetooth-le
+deviceCapabilities[6]:            front-facing-camera
+deviceCapabilities[7]:            gamekit
+deviceCapabilities[8]:            gyroscope
+deviceCapabilities[9]:            location-services
+deviceCapabilities[10]:           magnetometer
+deviceCapabilities[11]:           metal
+deviceCapabilities[12]:           microphone
+deviceCapabilities[13]:           opengles-1
+deviceCapabilities[14]:           opengles-2
+deviceCapabilities[15]:           opengles-3
+deviceCapabilities[16]:           peer-peer
+deviceCapabilities[17]:           still-camera
+deviceCapabilities[18]:           video-camera
+deviceCapabilities[19]:           wifi
+deviceCapabilities[20]:           arkit
+deviceCapabilities[21]:           camera-flash
+deviceCapabilities[22]:           gps
+deviceCapabilities[23]:           healthkit
+deviceCapabilities[24]:           sms
+deviceCapabilities[25]:           telephony
+formFactor:                       PHONE
+id:                               iphonese3
+name:                             iPhone SE 3
+perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
+perVersionInfo[0].versionId:      18.4
+screenDensity:                    326
+screenX:                          640
+screenY:                          1136
+supportedVersionIds[0]:           18.4`
