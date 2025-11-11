@@ -35,11 +35,12 @@ website: https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios
 source_code_url: https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios
 support_url: https://github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/issues
 project_type_tags:
-- ios
 - cordova
-- ionic
-- react-native
 - flutter
+- ionic
+- ios
+- kotlin-multiplatform
+- react-native
 
 type_tags:
 - test
@@ -79,17 +80,19 @@ inputs:
       `iphone8,14.7,en,landscape`
       Available devices and its versions:
       ```
-      ┌─────────────┬────────────────────────┬────────────────┬──────────────┐
-      │   MODEL_ID  │          NAME          │ OS_VERSION_IDS │     TAGS     │
-      ├─────────────┼────────────────────────┼────────────────┼──────────────┤
-      │ ipad10      │ iPad (10th generation) │ 16.6           │              │
-      │ iphone11pro │ iPhone 11 Pro          │ 16.6           │              │
-      │ iphone13pro │ iPhone 13 Pro          │ 15.7,16.6      │ default      │
-      │ iphone14pro │ iPhone 14 Pro          │ 16.6           │              │
-      │ iphone15    │ iPhone 15              │ 18.0           │ preview=18.0 │
-      │ iphone15pro │ iPhone 15 Pro          │ 18.0           │ preview=18.0 │
-      │ iphone8     │ iPhone 8               │ 15.7,16.6      │              │
-      └─────────────┴────────────────────────┴────────────────┴──────────────┘
+      ┌─────────────┬────────────────────────┬────────────────┬──────────────────────────────────┐
+      │   MODEL_ID  │          NAME          │ OS_VERSION_IDS │               TAGS               │
+      ├─────────────┼────────────────────────┼────────────────┼──────────────────────────────────┤
+      │ ipad10      │ iPad (10th generation) │ 16.6           │                                  │
+      │ iphone11pro │ iPhone 11 Pro          │ 16.6           │                                  │
+      │ iphone13pro │ iPhone 13 Pro          │ 15.7,16.6      │ deprecated=15.7, deprecated=16.6 │
+      │ iphone14pro │ iPhone 14 Pro          │ 16.6           │                                  │
+      │ iphone15    │ iPhone 15              │ 18.0           │ deprecated=18.0                  │
+      │ iphone15pro │ iPhone 15 Pro          │ 18.0           │ deprecated=18.0                  │
+      │ iphone16pro │ iPhone 16 Pro          │ 18.3           │ default                          │
+      │ iphone8     │ iPhone 8               │ 15.7,16.6      │ deprecated=15.7                  │
+      │ iphonese3   │ iPhone SE 3            │ 18.4           │                                  │
+      └─────────────┴────────────────────────┴────────────────┴──────────────────────────────────┘
       ```
 
       Device and OS Capacity:
@@ -104,8 +107,10 @@ inputs:
       │ iphone14pro │ iPhone 14 Pro          │ 16.6          │ High            │
       │ iphone15    │ iPhone 15              │ 18.0          │ Medium          │
       │ iphone15pro │ iPhone 15 Pro          │ 18.0          │ Medium          │
+      │ iphone16pro │ iPhone 16 Pro          │ 18.3          │ High            │
       │ iphone8     │ iPhone 8               │ 15.7          │ Medium          │
       │ iphone8     │ iPhone 8               │ 16.6          │ Medium          │
+      │ iphonese3   │ iPhone SE 3            │ 18.4          │ Medium          │
       └─────────────┴────────────────────────┴───────────────┴─────────────────┘
       ```
     summary: |
@@ -116,17 +121,19 @@ inputs:
       `iphone8,14.7,en,landscape`
       Available devices and its versions:
       ```
-      ┌─────────────┬────────────────────────┬────────────────┬──────────────┐
-      │   MODEL_ID  │          NAME          │ OS_VERSION_IDS │     TAGS     │
-      ├─────────────┼────────────────────────┼────────────────┼──────────────┤
-      │ ipad10      │ iPad (10th generation) │ 16.6           │              │
-      │ iphone11pro │ iPhone 11 Pro          │ 16.6           │              │
-      │ iphone13pro │ iPhone 13 Pro          │ 15.7,16.6      │ default      │
-      │ iphone14pro │ iPhone 14 Pro          │ 16.6           │              │
-      │ iphone15    │ iPhone 15              │ 18.0           │ preview=18.0 │
-      │ iphone15pro │ iPhone 15 Pro          │ 18.0           │ preview=18.0 │
-      │ iphone8     │ iPhone 8               │ 15.7,16.6      │              │
-      └─────────────┴────────────────────────┴────────────────┴──────────────┘
+      ┌─────────────┬────────────────────────┬────────────────┬──────────────────────────────────┐
+      │   MODEL_ID  │          NAME          │ OS_VERSION_IDS │               TAGS               │
+      ├─────────────┼────────────────────────┼────────────────┼──────────────────────────────────┤
+      │ ipad10      │ iPad (10th generation) │ 16.6           │                                  │
+      │ iphone11pro │ iPhone 11 Pro          │ 16.6           │                                  │
+      │ iphone13pro │ iPhone 13 Pro          │ 15.7,16.6      │ deprecated=15.7, deprecated=16.6 │
+      │ iphone14pro │ iPhone 14 Pro          │ 16.6           │                                  │
+      │ iphone15    │ iPhone 15              │ 18.0           │ deprecated=18.0                  │
+      │ iphone15pro │ iPhone 15 Pro          │ 18.0           │ deprecated=18.0                  │
+      │ iphone16pro │ iPhone 16 Pro          │ 18.3           │ default                          │
+      │ iphone8     │ iPhone 8               │ 15.7,16.6      │ deprecated=15.7                  │
+      │ iphonese3   │ iPhone SE 3            │ 18.4           │                                  │
+      └─────────────┴────────────────────────┴────────────────┴──────────────────────────────────┘
       ```
 
       Device and OS Capacity:
@@ -141,8 +148,10 @@ inputs:
       │ iphone14pro │ iPhone 14 Pro          │ 16.6          │ High            │
       │ iphone15    │ iPhone 15              │ 18.0          │ Medium          │
       │ iphone15pro │ iPhone 15 Pro          │ 18.0          │ Medium          │
+      │ iphone16pro │ iPhone 16 Pro          │ 18.3          │ High            │
       │ iphone8     │ iPhone 8               │ 15.7          │ Medium          │
       │ iphone8     │ iPhone 8               │ 16.6          │ Medium          │
+      │ iphonese3   │ iPhone SE 3            │ 18.4          │ Medium          │
       └─────────────┴────────────────────────┴───────────────┴─────────────────┘
       ```
     is_required: true
