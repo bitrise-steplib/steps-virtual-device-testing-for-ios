@@ -11,10 +11,37 @@ app:
   # Secret env vars have matching key and value
   - BITRISE_APPLE_APPLE_CERTIFICATE_URL_LIST: $BITRISE_APPLE_APPLE_CERTIFICATE_URL_LIST
   - BITRISE_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST: $BITRISE_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
+  - GCP_SERVICE_ACCOUNT_JSON_VDT_DEVICE_FETCHER: $GCP_SERVICE_ACCOUNT_JSON_VDT_DEVICE_FETCHER
 
 workflows:
   # `test_` prefix is used by unified CI to filter tests to run
+
+  # The test runs on Firebase Test Lab's physical devices, so its result does not depend on the
+  # Xcode stack the build happens to be on. Running it on every stack would only spend device
+  # minutes on the same assertions, so on CI it is limited to the latest Xcode stack. Locally
+  # (`bitrise run --config ./e2e/bitrise.yml test_flaky_and_quarantined_tests`) it always runs.
   test_flaky_and_quarantined_tests:
+    steps:
+    - bitrise-run:
+        run_if: |-
+          {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
+        inputs:
+        - workflow_id: utility_test_flaky_and_quarantined_tests
+        - bitrise_config_path: ./e2e/bitrise.yml
+
+  # Checks the device tables in step.yml against the live Firebase Test Lab catalog. Needs no
+  # devices and no codesigning, only a service account for the catalog lookup, so it runs on
+  # every stack.
+  test_device_catalog_up_to_date:
+    envs:
+    # maintenance/maintenance_test.go signs in to gcloud with this, and skips without it.
+    - SERVICE_ACCOUNT_JSON: $GCP_SERVICE_ACCOUNT_JSON_VDT_DEVICE_FETCHER
+    steps:
+    - go-test:
+        inputs:
+        - packages: ./maintenance
+
+  utility_test_flaky_and_quarantined_tests:
     envs:
     - TEST_DEVICES: iphone16pro,18.3,en,portrait
     - NUM_FLAKY_TEST_ATTEMPTS: 2
