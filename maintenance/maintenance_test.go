@@ -190,7 +190,7 @@ deviceCapabilities[26]:           telephony
 formFactor:                       PHONE
 id:                               iphone11pro
 name:                             iPhone 11 Pro
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_HIGH
+perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
 perVersionInfo[0].versionId:      16.6
 screenDensity:                    458
 screenX:                          1125
@@ -225,132 +225,15 @@ deviceCapabilities[24]:           nfc
 deviceCapabilities[25]:           sms
 deviceCapabilities[26]:           telephony
 formFactor:                       PHONE
-id:                               iphone13pro
-name:                             iPhone 13 Pro
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_HIGH
-perVersionInfo[0].versionId:      15.7
-perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_HIGH
-perVersionInfo[1].versionId:      16.6
-screenDensity:                    460
-screenX:                          1170
-screenY:                          2532
-supportedVersionIds[0]:           15.7
-supportedVersionIds[1]:           16.6
-tags[0]:                          deprecated=15.7
-tags[1]:                          deprecated=16.6
----
-deviceCapabilities[0]:            accelerometer
-deviceCapabilities[1]:            arm64
-deviceCapabilities[2]:            armv6
-deviceCapabilities[3]:            armv7
-deviceCapabilities[4]:            auto-focus-camera
-deviceCapabilities[5]:            bluetooth-le
-deviceCapabilities[6]:            front-facing-camera
-deviceCapabilities[7]:            gamekit
-deviceCapabilities[8]:            gyroscope
-deviceCapabilities[9]:            location-services
-deviceCapabilities[10]:           magnetometer
-deviceCapabilities[11]:           metal
-deviceCapabilities[12]:           microphone
-deviceCapabilities[13]:           opengles-1
-deviceCapabilities[14]:           opengles-2
-deviceCapabilities[15]:           opengles-3
-deviceCapabilities[16]:           peer-peer
-deviceCapabilities[17]:           still-camera
-deviceCapabilities[18]:           video-camera
-deviceCapabilities[19]:           wifi
-deviceCapabilities[20]:           arkit
-deviceCapabilities[21]:           camera-flash
-deviceCapabilities[22]:           gps
-deviceCapabilities[23]:           healthkit
-deviceCapabilities[24]:           nfc
-deviceCapabilities[25]:           sms
-deviceCapabilities[26]:           telephony
-formFactor:                       PHONE
 id:                               iphone14pro
 name:                             iPhone 14 Pro
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_HIGH
+perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
 perVersionInfo[0].versionId:      16.6
 screenDensity:                    460
 screenX:                          1179
 screenY:                          2556
 supportedVersionIds[0]:           16.6
----
-deviceCapabilities[0]:            accelerometer
-deviceCapabilities[1]:            arm64
-deviceCapabilities[2]:            armv6
-deviceCapabilities[3]:            armv7
-deviceCapabilities[4]:            auto-focus-camera
-deviceCapabilities[5]:            bluetooth-le
-deviceCapabilities[6]:            front-facing-camera
-deviceCapabilities[7]:            gamekit
-deviceCapabilities[8]:            gyroscope
-deviceCapabilities[9]:            location-services
-deviceCapabilities[10]:           magnetometer
-deviceCapabilities[11]:           metal
-deviceCapabilities[12]:           microphone
-deviceCapabilities[13]:           opengles-1
-deviceCapabilities[14]:           opengles-2
-deviceCapabilities[15]:           opengles-3
-deviceCapabilities[16]:           peer-peer
-deviceCapabilities[17]:           still-camera
-deviceCapabilities[18]:           video-camera
-deviceCapabilities[19]:           wifi
-deviceCapabilities[20]:           arkit
-deviceCapabilities[21]:           camera-flash
-deviceCapabilities[22]:           gps
-deviceCapabilities[23]:           healthkit
-deviceCapabilities[24]:           nfc
-deviceCapabilities[25]:           sms
-deviceCapabilities[26]:           telephony
-formFactor:                       PHONE
-id:                               iphone15
-name:                             iPhone 15
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
-perVersionInfo[0].versionId:      18.0
-screenDensity:                    460
-screenX:                          1170
-screenY:                          2532
-supportedVersionIds[0]:           18.0
-tags[0]:                          deprecated=18.0
----
-deviceCapabilities[0]:            accelerometer
-deviceCapabilities[1]:            arm64
-deviceCapabilities[2]:            armv6
-deviceCapabilities[3]:            armv7
-deviceCapabilities[4]:            auto-focus-camera
-deviceCapabilities[5]:            bluetooth-le
-deviceCapabilities[6]:            front-facing-camera
-deviceCapabilities[7]:            gamekit
-deviceCapabilities[8]:            gyroscope
-deviceCapabilities[9]:            location-services
-deviceCapabilities[10]:           magnetometer
-deviceCapabilities[11]:           metal
-deviceCapabilities[12]:           microphone
-deviceCapabilities[13]:           opengles-1
-deviceCapabilities[14]:           opengles-2
-deviceCapabilities[15]:           opengles-3
-deviceCapabilities[16]:           peer-peer
-deviceCapabilities[17]:           still-camera
-deviceCapabilities[18]:           video-camera
-deviceCapabilities[19]:           wifi
-deviceCapabilities[20]:           arkit
-deviceCapabilities[21]:           camera-flash
-deviceCapabilities[22]:           gps
-deviceCapabilities[23]:           healthkit
-deviceCapabilities[24]:           nfc
-deviceCapabilities[25]:           sms
-deviceCapabilities[26]:           telephony
-formFactor:                       PHONE
-id:                               iphone15pro
-name:                             iPhone 15 Pro
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
-perVersionInfo[0].versionId:      18.0
-screenDensity:                    460
-screenX:                          1179
-screenY:                          2556
-supportedVersionIds[0]:           18.0
-tags[0]:                          deprecated=18.0
+tags[0]:                          default
 ---
 deviceCapabilities[0]:            accelerometer
 deviceCapabilities[1]:            arm64
@@ -382,13 +265,12 @@ deviceCapabilities[26]:           telephony
 formFactor:                       PHONE
 id:                               iphone16pro
 name:                             iPhone 16 Pro
-perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_HIGH
+perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
 perVersionInfo[0].versionId:      18.3
 screenDensity:                    460
 screenX:                          1206
 screenY:                          2622
 supportedVersionIds[0]:           18.3
-tags[0]:                          default
 ---
 deviceCapabilities[0]:            accelerometer
 deviceCapabilities[1]:            arm64
@@ -421,15 +303,11 @@ formFactor:                       PHONE
 id:                               iphone8
 name:                             iPhone 8
 perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
-perVersionInfo[0].versionId:      15.7
-perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_MEDIUM
-perVersionInfo[1].versionId:      16.6
+perVersionInfo[0].versionId:      16.6
 screenDensity:                    326
 screenX:                          750
 screenY:                          1334
-supportedVersionIds[0]:           15.7
-supportedVersionIds[1]:           16.6
-tags[0]:                          deprecated=15.7
+supportedVersionIds[0]:           16.6
 ---
 deviceCapabilities[0]:            accelerometer
 deviceCapabilities[1]:            arm64
@@ -462,7 +340,10 @@ id:                               iphonese3
 name:                             iPhone SE 3
 perVersionInfo[0].deviceCapacity: DEVICE_CAPACITY_MEDIUM
 perVersionInfo[0].versionId:      18.4
+perVersionInfo[1].deviceCapacity: DEVICE_CAPACITY_MEDIUM
+perVersionInfo[1].versionId:      26.3
 screenDensity:                    326
 screenX:                          640
 screenY:                          1136
-supportedVersionIds[0]:           18.4`
+supportedVersionIds[0]:           18.4
+supportedVersionIds[1]:           26.3`

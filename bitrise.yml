@@ -67,7 +67,7 @@ workflows:
         title: Check if skipped tests are really skipped
         inputs:
         - content: |
-            test_results_xml_path="$VDTESTING_DOWNLOADED_FILES_DIR/iphone13pro-16.6-en-portrait-test_results_merged.xml"
+            test_results_xml_path="$VDTESTING_DOWNLOADED_FILES_DIR/iphone16pro-18.3-en-portrait-test_results_merged.xml"
             if [ ! -f "$test_results_xml_path" ]; then
               echo "No test results xml found at: $test_results_xml_path"
               exit 1
