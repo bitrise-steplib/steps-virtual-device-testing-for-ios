@@ -120,6 +120,8 @@ inputs:
       └─────────────┴────────────────────────┴───────────────┴─────────────────┘
       ```
 
+      **Video recording:** Firebase Test Lab does not return videos for iOS 18 and newer, so runs on `iphone16pro,18.3`, `iphonese3,18.4` and `iphonese3,26.3` produce screenshots but no video. The 16.6 devices above are currently the only ones that return video. This is a Firebase limitation, not a Step one — see [Available devices in Test Lab](https://firebase.google.com/docs/test-lab/ios/available-testing-devices).
+
       Google regularly adds and retires Firebase Test Lab devices, so the tables above can go out of date. There are three ways to check the current catalog:
 
       - **Firebase console** (no CLI needed): open [Test Lab](https://console.firebase.google.com/project/_/testlab) and start a test run — the available devices are shown in the **Select dimensions** step.
@@ -163,6 +165,8 @@ inputs:
       │ iphonese3   │ iPhone SE 3            │ 26.3          │ Medium          │
       └─────────────┴────────────────────────┴───────────────┴─────────────────┘
       ```
+
+      **Video recording:** Firebase Test Lab does not return videos for iOS 18 and newer, so runs on `iphone16pro,18.3`, `iphonese3,18.4` and `iphonese3,26.3` produce screenshots but no video. The 16.6 devices above are currently the only ones that return video. This is a Firebase limitation, not a Step one — see [Available devices in Test Lab](https://firebase.google.com/docs/test-lab/ios/available-testing-devices).
 
       Google regularly adds and retires Firebase Test Lab devices, so the tables above can go out of date. There are three ways to check the current catalog:
 
