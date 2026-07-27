@@ -1,0 +1,116 @@
+format_version: "11"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+app:
+  envs:
+  - TEST_APP_URL: https://github.com/bitrise-io/sample-swift-project-with-parallel-ui-test.git
+  - TEST_APP_BRANCH: master
+  - BITRISE_PROJECT_PATH: BullsEye.xcworkspace
+  - BITRISE_SCHEME: BullsEye
+  - TEST_PLAN: FullTests
+  # Secret env vars have matching key and value
+  - BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+  - BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE
+
+workflows:
+  # `test_` prefix is used by unified CI to filter tests to run
+  test_flaky_and_quarantined_tests:
+    envs:
+    - TEST_DEVICES: iphone16pro,18.3,en,portrait
+    - NUM_FLAKY_TEST_ATTEMPTS: 2
+    - QUARANTINED_TESTS: |-
+        [
+          {
+            "testCaseName": "testGameStyleSwitch()",
+            "testSuiteName": [
+              "BullsEyeUITests"
+            ],
+            "className": "BullsEyeUITests2"
+          }
+        ]
+    after_run:
+    - _build_test_bundle
+    - _run
+    - _check_outputs
+    - _check_quarantined_test_skipped
+    - _deploy_artifacts
+
+  _build_test_bundle:
+    steps:
+    - script:
+        title: Clean _tmp dir
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -ex
+            rm -rf ./_tmp
+    - git::https://github.com/bitrise-steplib/bitrise-step-simple-git-clone.git:
+        inputs:
+        - repository_url: $TEST_APP_URL
+        - branch: $TEST_APP_BRANCH
+        - clone_into_dir: ./_tmp
+    - xcode-build-for-test:
+        inputs:
+        - project_path: ./_tmp/$BITRISE_PROJECT_PATH
+        - scheme: $BITRISE_SCHEME
+        - test_plan: $TEST_PLAN
+        - output_tool: xcodebuild
+        - automatic_code_signing: api-key
+        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE
+
+  _run:
+    steps:
+    - path::./:
+        inputs:
+        - test_devices: $TEST_DEVICES
+        - download_test_results: "true"
+        - num_flaky_test_attempts: $NUM_FLAKY_TEST_ATTEMPTS
+        - quarantined_tests: $QUARANTINED_TESTS
+
+  _check_outputs:
+    steps:
+    - script:
+        title: Check VDTESTING_DOWNLOADED_FILES_DIR is exported
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -e
+            if [[ -z "$VDTESTING_DOWNLOADED_FILES_DIR" ]] ; then
+              echo "VDTESTING_DOWNLOADED_FILES_DIR should not be empty"
+              exit 1
+            fi
+            echo "VDTESTING_DOWNLOADED_FILES_DIR: $VDTESTING_DOWNLOADED_FILES_DIR"
+
+  _check_quarantined_test_skipped:
+    steps:
+    - script:
+        title: Check if quarantined tests are really skipped
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -e
+            # The step names result files after the device config, with `,` replaced by `-`.
+            # Deriving it here keeps the assertion in sync with TEST_DEVICES automatically.
+            device_slug="$(echo "$TEST_DEVICES" | tr ',' '-')"
+            test_results_xml_path="$VDTESTING_DOWNLOADED_FILES_DIR/${device_slug}-test_results_merged.xml"
+
+            if [ ! -f "$test_results_xml_path" ]; then
+              echo "No test results xml found at: $test_results_xml_path"
+              echo "Files present in $VDTESTING_DOWNLOADED_FILES_DIR:"
+              ls -1 "$VDTESTING_DOWNLOADED_FILES_DIR"
+              exit 1
+            fi
+
+            if grep -q '<testcase name="testGameStyleSwitch" classname="BullsEyeUITests.BullsEyeUITests2"' "$test_results_xml_path"; then
+              echo "The quarantined test was found in the test results xml."
+              exit 1
+            fi
+            echo "The quarantined test was NOT found in the test results xml."
+
+  _deploy_artifacts:
+    steps:
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - is_compress: "true"
+        - deploy_path: $VDTESTING_DOWNLOADED_FILES_DIR

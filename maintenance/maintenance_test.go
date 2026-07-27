@@ -13,7 +13,16 @@ import (
 	"github.com/bitrise-io/go-utils/pathutil"
 )
 
+// TestDeviceList compares the device tables in step.yml against the live Firebase Test Lab
+// catalog. It needs the gcloud CLI and a service account, so it is skipped unless
+// $SERVICE_ACCOUNT_JSON is set — the unified CI `check` workflow runs without secrets, and a
+// hard failure there would mask real static analysis and unit test results. It runs for real in
+// the `maintenance` workflow, and locally once the secret is set.
 func TestDeviceList(t *testing.T) {
+	if os.Getenv("SERVICE_ACCOUNT_JSON") == "" {
+		t.Skip("$SERVICE_ACCOUNT_JSON is not set, skipping the live device catalog check")
+	}
+
 	signedIn, err := checkAccounts()
 	if err != nil {
 		t.Errorf("%s", err)
