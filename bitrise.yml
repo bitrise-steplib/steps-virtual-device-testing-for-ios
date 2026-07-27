@@ -7,6 +7,10 @@ app:
   - SAMPLE_APP_BRANCH: UI_test
 
 workflows:
+  check:
+    steps:
+    - git::https://github.com/bitrise-steplib/steps-check.git: { }
+
   test:
     steps:
     - git::https://github.com/bitrise-steplib/steps-check.git: { }
