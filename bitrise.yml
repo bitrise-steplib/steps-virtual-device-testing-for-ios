@@ -1,10 +1,13 @@
 format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
+include:
+- repository: steps-check
+  branch: master
+  path: steps.bitrise.yml
+
 workflows:
-  check:
-    steps:
-    - git::https://github.com/bitrise-steplib/steps-check.git: { }
+  # check: included from steps-check/steps.bitrise.yml
 
   e2e:
     steps:
@@ -39,8 +42,8 @@ workflows:
         - test_plan: FullTests
         - output_tool: xcodebuild
         - automatic_code_signing: api-key
-        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE
+        - certificate_url_list: $BITRISE_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITRISE_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
     - path::./:
         inputs:
         - test_devices: $TEST_DEVICES
