@@ -34,12 +34,18 @@ workflows:
   # every stack.
   test_device_catalog_up_to_date:
     envs:
-    # maintenance/maintenance_test.go signs in to gcloud with this, and skips without it.
+    # maintenance/maintenance_test.go signs in to gcloud with this.
     - SERVICE_ACCOUNT_JSON: $GCP_SERVICE_ACCOUNT_JSON_VDT_DEVICE_FETCHER
     steps:
-    - go-test:
+    - script:
+        title: Compare step.yml's device tables with the live catalog
         inputs:
-        - packages: ./maintenance
+        - content: |-
+            #!/bin/env bash
+            set -eo pipefail
+            # The go-test Step cannot pass build tags, and the test is behind the
+            # `maintenance` tag to keep it out of `go test ./...` in the check workflow.
+            go test -v -tags maintenance ./maintenance
 
   utility_test_flaky_and_quarantined_tests:
     envs:
