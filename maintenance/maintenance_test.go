@@ -42,30 +42,23 @@ func checkDeviceList() error {
 		return nil
 	}
 
-	cmd = command.New("gcloud", "firebase", "test", "ios", "models", "list")
-
-	outFormatted, err := cmd.RunAndReturnTrimmedCombinedOutput()
-	if err != nil {
-		return fmt.Errorf("out: %s, err: %w", out, err)
-	}
-
 	// Your gcloud sdk version must be 417.0.0 or greater for this command to succeed.
-	cmd = command.New("gcloud", "firebase", "test", "ios", "list-device-capacities")
+	cmd = command.New("gcloud", "firebase", "test", "ios", "models", "list",
+		"--flatten", "perVersionInfo[]",
+		"--filter", "perVersionInfo.deviceCapacity:*",
+		"--format", deviceTableFormat)
 
-	capacityFormatted, err := cmd.RunAndReturnTrimmedCombinedOutput()
+	deviceTable, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		return fmt.Errorf("out: %s, err: %w", out, err)
+		return fmt.Errorf("out: %s, err: %w", deviceTable, err)
 	}
 
 	fmt.Println("Fresh devices list to use in this maintenance test:")
 	fmt.Println(out)
 	fmt.Println()
-	fmt.Println("Fresh device list to use in the step's descriptor:")
-	fmt.Println("Available devices and its versions:")
-	fmt.Println(outFormatted)
-	fmt.Println()
-	fmt.Println("Device and OS Capacity:")
-	fmt.Println(capacityFormatted)
+	fmt.Println("Fresh device table to use in the step's descriptor:")
+	fmt.Println("Available devices, OS versions and their capacity:")
+	fmt.Println(deviceTable)
 
 	return fmt.Errorf("device list has changed, update the corresponding step descriptor blocks")
 }
@@ -127,6 +120,17 @@ func checkAccounts() (bool, error) {
 
 	return len(accounts) > 0, nil
 }
+
+// deviceTableFormat renders models, OS versions, capacity and tags as a single box
+// table, matching the table in the test_devices input of step.yml. The sub() calls
+// turn the raw DEVICE_CAPACITY_* enum values into the friendly names that
+// `gcloud firebase test ios list-device-capacities` prints.
+const deviceTableFormat = `table[box](
+	id:label=MODEL_ID,
+	name:label=MODEL_NAME,
+	perVersionInfo.versionId:label=OS_VERSION_ID,
+	perVersionInfo.deviceCapacity.sub("DEVICE_CAPACITY_HIGH","High").sub("DEVICE_CAPACITY_MEDIUM","Medium").sub("DEVICE_CAPACITY_LOW","Low").sub("DEVICE_CAPACITY_NONE","None").sub("DEVICE_CAPACITY_UNSPECIFIED","None"):label=DEVICE_CAPACITY,
+	tags.join(sep=", "):label=TAGS)`
 
 const deviceList = `---
 deviceCapabilities[0]:            accelerometer
