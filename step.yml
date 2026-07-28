@@ -176,8 +176,7 @@ outputs:
 - BITRISE_FLAKY_TEST_CASES:
   opts:
     title: List of flaky test cases
-    summary:
-      A list of flaky test cases. A test case is considered flaky if it has failed at least once, but passed at least once as well.
+    summary: A list of flaky test cases. A test case is considered flaky if it has failed at least once, but passed at least once as well.
     description: |-
       A list of flaky test cases. A test case is considered flaky if it has failed at least once, but passed at least once as well.
 

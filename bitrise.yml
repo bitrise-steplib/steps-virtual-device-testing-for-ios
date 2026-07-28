@@ -1,94 +1,66 @@
 format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
-app:
-  envs:
-  - SAMPLE_APP_URL: https://github.com/bitrise-io/sample-apps-ios-simple-objc.git
-  - SAMPLE_APP_BRANCH: UI_test
+include:
+- repository: steps-check
+  branch: master
+  path: steps.bitrise.yml
 
 workflows:
-  test:
+  # check: included from steps-check/steps.bitrise.yml
+
+  e2e:
     steps:
-    - git::https://github.com/bitrise-steplib/steps-check.git: { }
+    - git::https://github.com/bitrise-steplib/steps-check.git:
+        inputs:
+        - workflow: e2e
+
+  sample:
+    envs:
+    - TEST_APP_URL: https://github.com/bitrise-io/sample-swift-project-with-parallel-ui-test.git
+    - TEST_APP_BRANCH: master
+    - BITRISE_PROJECT_PATH: BullsEye.xcworkspace
+    - BITRISE_SCHEME: BullsEye
+    - TEST_DEVICES: iphone16pro,18.3,en,portrait
+    steps:
     - script:
+        title: Clean _tmp dir
         inputs:
         - content: |-
-            #!/bin/bash
+            #!/bin/env bash
             set -ex
-            rm -rf "$BITRISE_SOURCE_DIR/_tmp"
-            mkdir -p "$BITRISE_SOURCE_DIR/_tmp"
-    - change-workdir:
-        title: Switch working dir to _tmp dir
-        run_if: true
-        inputs:
-        - path: $BITRISE_SOURCE_DIR/_tmp
-        - is_create_path: true
+            rm -rf ./_tmp
     - git::https://github.com/bitrise-steplib/bitrise-step-simple-git-clone.git:
         inputs:
-        - repository_url: https://github.com/bitrise-io/sample-swift-project-with-parallel-ui-test.git
-        - branch: master
-        - clone_into_dir: ./
+        - repository_url: $TEST_APP_URL
+        - branch: $TEST_APP_BRANCH
+        - clone_into_dir: ./_tmp
     - xcode-build-for-test:
         inputs:
-        - project_path: ./BullsEye.xcworkspace
-        - scheme: BullsEye
+        - project_path: ./_tmp/$BITRISE_PROJECT_PATH
+        - scheme: $BITRISE_SCHEME
         - test_plan: FullTests
         - output_tool: xcodebuild
         - automatic_code_signing: api-key
-        - certificate_url_list: $BITRISE_CERTIFICATE_URL
-        - passphrase_list: $BITRISE_CERTIFICATE_PASSPHRASE
+        - certificate_url_list: $BITRISE_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITRISE_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
     - path::./:
         inputs:
+        - test_devices: $TEST_DEVICES
         - download_test_results: "true"
-        - num_flaky_test_attempts: 2
-        - quarantined_tests: |-
-            [
-              {
-                "testCaseName": "testGameStyleSwitch()",
-                "testSuiteName": [
-                  "BullsEyeUITests"
-                ],
-                "className": "BullsEyeUITests2"
-              }
-            ]
-    - script:
-        title: Output check
-        inputs:
-        - content: |-
-            #!/bin/bash
-            set -e
-            if [[ -z "$VDTESTING_DOWNLOADED_FILES_DIR" ]] ; then
-              echo "VDTESTING_DOWNLOADED_FILES_DIR should not be empty"
-              exit 1
-            else
-              echo "VDTESTING_DOWNLOADED_FILES_DIR: $VDTESTING_DOWNLOADED_FILES_DIR"
-            fi
-    - script:
-        title: Check if skipped tests are really skipped
-        inputs:
-        - content: |
-            test_results_xml_path="$VDTESTING_DOWNLOADED_FILES_DIR/iphone16pro-18.3-en-portrait-test_results_merged.xml"
-            if [ ! -f "$test_results_xml_path" ]; then
-              echo "No test results xml found at: $test_results_xml_path"
-              exit 1
-            fi
-            if grep -q '<testcase name="testGameStyleSwitch" classname="BullsEyeUITests.BullsEyeUITests2"' "$test_results_xml_path"; then
-              echo "The skipped test was found in the test results xml."
-              exit 1
-            else
-              echo "The skipped test was NOT found in the test results xml."
-            fi
-    - deploy-to-bitrise-io@2:
-        inputs:
-        - is_compress: "true"
-        - deploy_path: $VDTESTING_DOWNLOADED_FILES_DIR
 
   maintenance:
     steps:
-    - go-test:
+    - script:
+        title: Compare step.yml's device tables with the live catalog
         inputs:
-        - packages: ./maintenance
+        - content: |-
+            #!/bin/env bash
+            set -eo pipefail
+            # Needs the gcloud CLI, and either an already signed in account or
+            # $SERVICE_ACCOUNT_JSON. The tag keeps it out of `go test ./...` in check.
+            go test -v -tags maintenance ./maintenance
 
   generate_readme:
     steps:
-    - git::https://github.com/bitrise-steplib/steps-readme-generator.git@main: { }
+    - git::https://github.com/bitrise-steplib/steps-readme-generator.git@main: {}

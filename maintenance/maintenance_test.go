@@ -1,3 +1,5 @@
+//go:build maintenance
+
 package maintenance
 
 import (
@@ -13,6 +15,11 @@ import (
 	"github.com/bitrise-io/go-utils/pathutil"
 )
 
+// TestDeviceList compares the device tables in step.yml against the live Firebase Test Lab
+// catalog. It needs the gcloud CLI and a service account, so it sits behind the `maintenance`
+// build tag and is not part of `go test ./...`: the unified CI `check` workflow runs without
+// secrets, and a hard failure there would mask real static analysis and unit test results.
+// Run it with `go test -tags maintenance ./maintenance`, or via the `maintenance` workflow.
 func TestDeviceList(t *testing.T) {
 	signedIn, err := checkAccounts()
 	if err != nil {
