@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -18,12 +19,10 @@ import (
 	toolresults "google.golang.org/api/toolresults/v1beta3"
 
 	"github.com/bitrise-io/go-steputils/v2/stepconf"
-	"github.com/bitrise-io/go-utils/colorstring"
-	"github.com/bitrise-io/go-utils/log"
-	"github.com/bitrise-io/go-utils/pathutil"
-	"github.com/bitrise-io/go-utils/sliceutil"
 	"github.com/bitrise-io/go-utils/v2/env"
-	logv2 "github.com/bitrise-io/go-utils/v2/log"
+	"github.com/bitrise-io/go-utils/v2/log"
+	"github.com/bitrise-io/go-utils/v2/log/colorstring"
+	"github.com/bitrise-io/go-utils/v2/pathutil"
 	"github.com/bitrise-steplib/steps-virtual-device-testing-for-ios/output"
 )
 
@@ -50,15 +49,15 @@ type UploadURLRequest struct {
 	TestAppURL string `json:"testAppUrl"`
 }
 
-func failf(f string, v ...interface{}) {
-	log.Errorf(f, v...)
-	os.Exit(1)
-}
-
 func main() {
+	logger := log.NewLogger()
+	failf := func(f string, v ...interface{}) {
+		logger.Errorf(f, v...)
+		os.Exit(1)
+	}
+
 	envRepository := env.NewRepository()
 	inputParser := stepconf.NewInputParser(envRepository)
-	logger := logv2.NewLogger()
 	outputExporter := output.NewExporter(output.NewOutputExporter(), logger)
 
 	var configs ConfigsModel
@@ -71,7 +70,7 @@ func main() {
 	// add quarantined tests to xctestrun
 	if configs.QuarantinedTests != "" {
 		fmt.Println()
-		log.TInfof("Adding quarantined tests to xctestrun")
+		logger.TInfof("Adding quarantined tests to xctestrun")
 
 		quarantinedTestsList, err := parseQuarantinedTests(configs.QuarantinedTests)
 		if err != nil {
@@ -79,9 +78,9 @@ func main() {
 		}
 
 		if len(quarantinedTestsList) == 0 {
-			log.TPrintf("No quarantined tests found")
+			logger.TPrintf("No quarantined tests found")
 		} else {
-			log.TPrintf("%d quarantined tests found", len(quarantinedTestsList))
+			logger.TPrintf("%d quarantined tests found", len(quarantinedTestsList))
 
 			updatedTestBundleZipPth, err := addQuarantinedTestsToTestBundle(configs.ZipPath, quarantinedTestsList)
 			if err != nil {
@@ -89,12 +88,12 @@ func main() {
 			}
 
 			configs.ZipPath = updatedTestBundleZipPth
-			log.TDonef("=> Quarantined tests added to xctestrun")
+			logger.TDonef("=> Quarantined tests added to xctestrun")
 		}
 	}
 
 	fmt.Println()
-	log.TInfof("Upload IPAs")
+	logger.TInfof("Upload IPAs")
 	{
 		url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
 
@@ -128,15 +127,15 @@ func main() {
 			failf("Failed to unmarshal response body, error: %s", err)
 		}
 
-		if err := uploadFile(responseModel.AppURL, configs.ZipPath); err != nil {
+		if err := uploadFile(logger, responseModel.AppURL, configs.ZipPath); err != nil {
 			failf("Failed to upload file(%s) to (%s), error: %s", configs.ZipPath, responseModel.AppURL, err)
 		}
 
-		log.TDonef("=> .xctestrun uploaded")
+		logger.TDonef("=> .xctestrun uploaded")
 	}
 
 	fmt.Println()
-	log.TInfof("Start test")
+	logger.TInfof("Start test")
 	{
 		url := configs.APIBaseURL + "/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
 
@@ -198,11 +197,11 @@ func main() {
 			failf("Failed to start test: %d, error: %s", resp.StatusCode, string(body))
 		}
 
-		log.TDonef("=> Test started")
+		logger.TDonef("=> Test started")
 	}
 
 	fmt.Println()
-	log.TInfof("Waiting for test results")
+	logger.TInfof("Waiting for test results")
 
 	dimensionToStatus := map[string]bool{}
 	{
@@ -266,19 +265,19 @@ func main() {
 				msg = fmt.Sprintf("- (%d/%d) running", testsRunning, len(responseModel.Steps))
 			}
 
-			if !sliceutil.IsStringInSlice(msg, printedLogs) {
-				log.Printf(msg)
+			if !slices.Contains(printedLogs, msg) {
+				logger.Printf(msg)
 				printedLogs = append(printedLogs, msg)
 			}
 
 			if finished {
-				log.TDonef("=> Test finished")
+				logger.TDonef("=> Test finished")
 				fmt.Println()
 
 				printStepsStates(stepIDToStepStates, time.Now(), os.Stdout)
 				fmt.Println()
 
-				log.TInfof("Test results:")
+				logger.TInfof("Test results:")
 				w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
 				if _, err := fmt.Fprintln(w, "Model\tOS version\tOrientation\tLocale\tOutcome\t"); err != nil {
 					failf("Failed to write in writer")
@@ -356,7 +355,7 @@ func main() {
 					}
 				}
 				if err := w.Flush(); err != nil {
-					log.Errorf("Failed to flush writer, error: %s", err)
+					logger.Errorf("Failed to flush writer, error: %s", err)
 				}
 			}
 			if !finished {
@@ -367,7 +366,7 @@ func main() {
 
 	if configs.DownloadTestResults {
 		fmt.Println()
-		log.TInfof("Downloading test assets")
+		logger.TInfof("Downloading test assets")
 		{
 			url := configs.APIBaseURL + "/assets/" + configs.AppSlug + "/" + configs.BuildSlug + "/" + string(configs.APIToken)
 
@@ -397,7 +396,7 @@ func main() {
 				failf("Failed to unmarshal response body, error: %s", err)
 			}
 
-			tempDir, err := pathutil.NormalizedOSTempDirPath("vdtesting_test_assets")
+			tempDir, err := pathutil.NewPathProvider().CreateTempDir("vdtesting_test_assets")
 			if err != nil {
 				failf("Failed to create temp dir, error: %s", err)
 			}
@@ -405,7 +404,7 @@ func main() {
 			var mergedTestResultXmlPths []string
 			for fileName, fileURL := range responseModel {
 				pth := filepath.Join(tempDir, fileName)
-				if err := downloadFile(fileURL, pth); err != nil {
+				if err := downloadFile(logger, fileURL, pth); err != nil {
 					failf("Failed to download file, error: %s", err)
 				}
 
@@ -417,14 +416,14 @@ func main() {
 				}
 			}
 
-			log.TPrintf("%d merged test results XML(s) found", len(mergedTestResultXmlPths))
-			log.TDonef("=> %d test Assets downloaded", len(responseModel))
+			logger.TPrintf("%d merged test results XML(s) found", len(mergedTestResultXmlPths))
+			logger.TDonef("=> %d test Assets downloaded", len(responseModel))
 
 			if err := outputExporter.ExportTestResultsDir(tempDir); err != nil {
-				log.TWarnf("Failed to export test assets: %s", err)
+				logger.TWarnf("Failed to export test assets: %s", err)
 			} else if len(mergedTestResultXmlPths) > 0 {
 				if err := outputExporter.ExportFlakyTestsEnvVar(mergedTestResultXmlPths); err != nil {
-					log.TWarnf("Failed to export flaky tests env var: %s", err)
+					logger.TWarnf("Failed to export flaky tests env var: %s", err)
 				}
 			}
 		}
@@ -438,18 +437,18 @@ func main() {
 	}
 
 	if len(failedTestRuns) > 0 {
-		log.Errorf("%d test run(s) failed", len(failedTestRuns))
+		logger.Errorf("%d test run(s) failed", len(failedTestRuns))
 		os.Exit(1)
 	}
 }
 
-func downloadFile(url string, localPath string) error {
+func downloadFile(logger log.Logger, url string, localPath string) error {
 	// on HFS file system the max file name length: 255 UTF-16 encoding units
 	base := filepath.Base(localPath)
 	if len(base) > 255 {
-		log.Warnf("too long filename: %s", base)
+		logger.Warnf("too long filename: %s", base)
 		base = base[len(base)-255:]
-		log.Warnf("trimming to: %s", base)
+		logger.Warnf("trimming to: %s", base)
 		localPath = filepath.Join(filepath.Dir(localPath), base)
 	}
 
@@ -459,7 +458,7 @@ func downloadFile(url string, localPath string) error {
 	}
 	defer func() {
 		if err := out.Close(); err != nil {
-			log.Printf("Failed to close Archive download file (%s): %s", localPath, err)
+			logger.Printf("Failed to close Archive download file (%s): %s", localPath, err)
 		}
 	}()
 
@@ -469,7 +468,7 @@ func downloadFile(url string, localPath string) error {
 	}
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			log.Printf("Failed to close Archive download response body: %s", err)
+			logger.Printf("Failed to close Archive download response body: %s", err)
 		}
 	}()
 
@@ -484,7 +483,7 @@ func downloadFile(url string, localPath string) error {
 	return nil
 }
 
-func uploadFile(uploadURL string, archiveFilePath string) error {
+func uploadFile(logger log.Logger, uploadURL string, archiveFilePath string) error {
 	archFile, err := os.Open(archiveFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to open archive file for upload (%s): %s", archiveFilePath, err)
@@ -495,7 +494,7 @@ func uploadFile(uploadURL string, archiveFilePath string) error {
 			return
 		}
 		if err := archFile.Close(); err != nil {
-			log.Printf(" (!) Failed to close archive file (%s): %s", archiveFilePath, err)
+			logger.Printf(" (!) Failed to close archive file (%s): %s", archiveFilePath, err)
 		}
 	}()
 
@@ -520,7 +519,7 @@ func uploadFile(uploadURL string, archiveFilePath string) error {
 	isFileCloseRequired = false
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			log.Printf(" [!] Failed to close response body: %s", err)
+			logger.Printf(" [!] Failed to close response body: %s", err)
 		}
 	}()
 

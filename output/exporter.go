@@ -15,7 +15,7 @@ type outputExporter struct {
 }
 
 func NewOutputExporter() OutputExporter {
-	return &outputExporter{exporter: export.NewExporter(command.NewFactory(env.NewRepository()))}
+	return &outputExporter{exporter: export.NewDefaultExporter(command.NewFactory(env.NewRepository()))}
 }
 
 func (e *outputExporter) ExportOutput(key, value string) error {

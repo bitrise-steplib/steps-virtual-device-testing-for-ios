@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bitrise-io/go-utils/command"
-	"github.com/bitrise-io/go-utils/fileutil"
-	"github.com/bitrise-io/go-utils/pathutil"
+	"github.com/bitrise-io/go-utils/v2/command"
+	"github.com/bitrise-io/go-utils/v2/env"
+	"github.com/bitrise-io/go-utils/v2/pathutil"
 )
 
 // TestDeviceList compares the device tables in step.yml against the live Firebase Test Lab
@@ -21,24 +21,26 @@ import (
 // secrets, and a hard failure there would mask real static analysis and unit test results.
 // Run it with `go test -tags maintenance ./maintenance`, or via the `maintenance` workflow.
 func TestDeviceList(t *testing.T) {
-	signedIn, err := checkAccounts()
+	cmdFactory := command.NewFactory(env.NewRepository())
+
+	signedIn, err := checkAccounts(cmdFactory)
 	if err != nil {
 		t.Errorf("%s", err)
 	}
 
 	if !signedIn {
-		if err := signIn(); err != nil {
+		if err := signIn(cmdFactory); err != nil {
 			t.Errorf("%s", err)
 		}
 	}
 
-	if err := checkDeviceList(); err != nil {
+	if err := checkDeviceList(cmdFactory); err != nil {
 		t.Error(err)
 	}
 }
 
-func checkDeviceList() error {
-	cmd := command.New("gcloud", "firebase", "test", "ios", "models", "list", "--format", "text")
+func checkDeviceList(cmdFactory command.Factory) error {
+	cmd := cmdFactory.Create("gcloud", []string{"firebase", "test", "ios", "models", "list", "--format", "text"}, nil)
 
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
@@ -50,10 +52,10 @@ func checkDeviceList() error {
 	}
 
 	// Your gcloud sdk version must be 417.0.0 or greater for this command to succeed.
-	cmd = command.New("gcloud", "firebase", "test", "ios", "models", "list",
+	cmd = cmdFactory.Create("gcloud", []string{"firebase", "test", "ios", "models", "list",
 		"--flatten", "perVersionInfo[]",
 		"--filter", "perVersionInfo.deviceCapacity:*",
-		"--format", deviceTableFormat)
+		"--format", deviceTableFormat}, nil)
 
 	deviceTable, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
@@ -70,8 +72,8 @@ func checkDeviceList() error {
 	return fmt.Errorf("device list has changed, update the corresponding step descriptor blocks")
 }
 
-func signIn() error {
-	tmpDir, err := pathutil.NormalizedOSTempDirPath("_serv_acc_")
+func signIn(cmdFactory command.Factory) error {
+	tmpDir, err := pathutil.NewPathProvider().CreateTempDir("_serv_acc_")
 	if err != nil {
 		return err
 	}
@@ -82,7 +84,7 @@ func signIn() error {
 	}
 
 	servAccFilePAth := filepath.Join(tmpDir, "serv-acc.json")
-	if err := fileutil.WriteStringToFile(servAccFilePAth, servAccFileContent); err != nil {
+	if err := os.WriteFile(servAccFilePAth, []byte(servAccFileContent), 0644); err != nil {
 		return err
 	}
 
@@ -98,11 +100,12 @@ func signIn() error {
 		return fmt.Errorf("invalid service account json, no project_id found")
 	}
 
-	cmd := command.New("gcloud",
+	cmd := cmdFactory.Create("gcloud", []string{
 		"auth",
 		"activate-service-account",
 		fmt.Sprintf("--key-file=%s", servAccFilePAth),
-		"--project", servAcc.ProjectID)
+		"--project", servAcc.ProjectID,
+	}, nil)
 
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
@@ -112,8 +115,8 @@ func signIn() error {
 	return nil
 }
 
-func checkAccounts() (bool, error) {
-	cmd := command.New("gcloud", "auth", "list", "--format", "json")
+func checkAccounts(cmdFactory command.Factory) (bool, error) {
+	cmd := cmdFactory.Create("gcloud", []string{"auth", "list", "--format", "json"}, nil)
 
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
