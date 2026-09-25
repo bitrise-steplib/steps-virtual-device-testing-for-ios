@@ -18,7 +18,9 @@ import (
 	"google.golang.org/api/testing/v1"
 	toolresults "google.golang.org/api/toolresults/v1beta3"
 
+	"github.com/bitrise-io/go-steputils/v2/export"
 	"github.com/bitrise-io/go-steputils/v2/stepconf"
+	"github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-utils/v2/env"
 	"github.com/bitrise-io/go-utils/v2/log"
 	"github.com/bitrise-io/go-utils/v2/log/colorstring"
@@ -57,8 +59,9 @@ func main() {
 	}
 
 	envRepository := env.NewRepository()
+	cmdFactory := command.NewFactory(envRepository)
 	inputParser := stepconf.NewInputParser(envRepository)
-	outputExporter := output.NewExporter(output.NewOutputExporter(), logger)
+	outputExporter := output.NewExporter(output.NewOutputExporter(export.NewDefaultExporter(cmdFactory)), logger)
 
 	var configs ConfigsModel
 	if err := inputParser.Parse(&configs); err != nil {

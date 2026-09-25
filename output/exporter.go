@@ -2,8 +2,6 @@ package output
 
 import (
 	"github.com/bitrise-io/go-steputils/v2/export"
-	"github.com/bitrise-io/go-utils/v2/command"
-	"github.com/bitrise-io/go-utils/v2/env"
 )
 
 type OutputExporter interface {
@@ -14,8 +12,8 @@ type outputExporter struct {
 	exporter export.Exporter
 }
 
-func NewOutputExporter() OutputExporter {
-	return &outputExporter{exporter: export.NewDefaultExporter(command.NewFactory(env.NewRepository()))}
+func NewOutputExporter(exporter export.Exporter) OutputExporter {
+	return &outputExporter{exporter: exporter}
 }
 
 func (e *outputExporter) ExportOutput(key, value string) error {
