@@ -25,11 +25,20 @@ workflows:
   # Xcode stack the build happens to be on. Running it on every stack would only spend device
   # minutes on the same assertions, so on CI it is limited to the latest Xcode stack. Locally
   # (`bitrise run --config ./e2e/bitrise.yml test_flaky_and_quarantined_tests`) it always runs.
+  #
+  # TEMPORARY: skipped on CI while Xcode 27 (`osx-xcode-latest-stable`) is broken for
+  # `xcode-build-for-test` — the auto-provisioned .mobileprovision is written to
+  # `~/Library/MobileDevice/Provisioning Profiles/` but Xcode 27's ProcessProductPackaging
+  # reads from `~/Library/Developer/Xcode/UserData/Provisioning Profiles/` and fails with
+  # "Build input file cannot be found". Re-add the CI gate below once `xcode-build-for-test`
+  # is fixed for Xcode 27:
+  #   run_if: |-
+  #     {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
   test_flaky_and_quarantined_tests:
     steps:
     - bitrise-run:
         run_if: |-
-          {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
+          {{ not .IsCI }}
         inputs:
         - workflow_id: utility_test_flaky_and_quarantined_tests
         - bitrise_config_path: ./e2e/bitrise.yml
