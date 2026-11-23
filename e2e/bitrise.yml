@@ -9,13 +9,13 @@ app:
   - BITRISE_SCHEME: BullsEye
   - TEST_PLAN: FullTests
   # Secret env vars have matching key and value
-  - BITRISE_APPLE_APPLE_CERTIFICATE_URL_LIST: $BITRISE_APPLE_APPLE_CERTIFICATE_URL_LIST
-  - BITRISE_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST: $BITRISE_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
+  - BLTD_APPLE_CERTIFICATE_URL_LIST: $BLTD_APPLE_CERTIFICATE_URL_LIST
+  - BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST: $BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST
   # App Store Connect API key for the BITRISE LIMITED team. Code signing needs it to look up the
   # certificates on the Developer Portal and to manage the provisioning profile.
-  - BITRISE_APPSTORECONNECT_API_KEY_URL: $BITRISE_APPSTORECONNECT_API_KEY_URL
-  - BITRISE_APPSTORECONNECT_API_KEY_ID: $BITRISE_APPSTORECONNECT_API_KEY_ID
-  - BITRISE_APPSTORECONNECT_API_KEY_ISSUER_ID: $BITRISE_APPSTORECONNECT_API_KEY_ISSUER_ID
+  - BLTD_APPSTORECONNECT_API_KEY_URL: $BLTD_APPSTORECONNECT_API_KEY_URL
+  - BLTD_APPSTORECONNECT_API_KEY_ID: $BLTD_APPSTORECONNECT_API_KEY_ID
+  - BLTD_APPSTORECONNECT_API_KEY_ISSUER_ID: $BLTD_APPSTORECONNECT_API_KEY_ISSUER_ID
   - GCP_SERVICE_ACCOUNT_JSON_VDT_DEVICE_FETCHER: $GCP_SERVICE_ACCOUNT_JSON_VDT_DEVICE_FETCHER
 
 workflows:
@@ -26,19 +26,14 @@ workflows:
   # minutes on the same assertions, so on CI it is limited to the latest Xcode stack. Locally
   # (`bitrise run --config ./e2e/bitrise.yml test_flaky_and_quarantined_tests`) it always runs.
   #
-  # TEMPORARY: skipped on CI while Xcode 27 (`osx-xcode-latest-stable`) is broken for
-  # `xcode-build-for-test` — the auto-provisioned .mobileprovision is written to
-  # `~/Library/MobileDevice/Provisioning Profiles/` but Xcode 27's ProcessProductPackaging
-  # reads from `~/Library/Developer/Xcode/UserData/Provisioning Profiles/` and fails with
-  # "Build input file cannot be found". Re-add the CI gate below once `xcode-build-for-test`
-  # is fixed for Xcode 27:
-  #   run_if: |-
-  #     {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
+  # Code signing with Xcode 27 needs the explicit App IDs io.bitrise.samples.swift and
+  # io.bitrise.samples.swift.uitests.xctrunner on the Developer Portal. Without them Xcode falls
+  # back to the team's wildcard profile and the build fails with "Build input file cannot be found".
   test_flaky_and_quarantined_tests:
     steps:
     - bitrise-run:
         run_if: |-
-          {{ not .IsCI }}
+          {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
         inputs:
         - workflow_id: utility_test_flaky_and_quarantined_tests
         - bitrise_config_path: ./e2e/bitrise.yml
@@ -103,11 +98,11 @@ workflows:
         - test_plan: $TEST_PLAN
         - output_tool: xcodebuild
         - automatic_code_signing: api-key
-        - certificate_url_list: $BITRISE_APPLE_APPLE_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITRISE_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
-        - api_key_path: $BITRISE_APPSTORECONNECT_API_KEY_URL
-        - api_key_id: $BITRISE_APPSTORECONNECT_API_KEY_ID
-        - api_key_issuer_id: $BITRISE_APPSTORECONNECT_API_KEY_ISSUER_ID
+        - certificate_url_list: $BLTD_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST
+        - api_key_path: $BLTD_APPSTORECONNECT_API_KEY_URL
+        - api_key_id: $BLTD_APPSTORECONNECT_API_KEY_ID
+        - api_key_issuer_id: $BLTD_APPSTORECONNECT_API_KEY_ISSUER_ID
 
   _run:
     steps:
