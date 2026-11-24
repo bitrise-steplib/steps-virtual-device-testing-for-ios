@@ -9,14 +9,13 @@ app:
   - BITRISE_SCHEME: BullsEye
   - TEST_PLAN: FullTests
   # Secret env vars have matching key and value
-  - BITRISE_APPLE_APPLE_CERTIFICATE_URL_LIST: $BITRISE_APPLE_APPLE_CERTIFICATE_URL_LIST
-  - BITRISE_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST: $BITRISE_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
+  - BLTD_APPLE_CERTIFICATE_URL_LIST: $BLTD_APPLE_CERTIFICATE_URL_LIST
+  - BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST: $BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST
   # App Store Connect API key for the BITRISE LIMITED team. Code signing needs it to look up the
   # certificates on the Developer Portal and to manage the provisioning profile.
-  - BITRISE_APPSTORECONNECT_API_KEY_URL: $BITRISE_APPSTORECONNECT_API_KEY_URL
-  - BITRISE_APPSTORECONNECT_API_KEY_ID: $BITRISE_APPSTORECONNECT_API_KEY_ID
-  - BITRISE_APPSTORECONNECT_API_KEY_ISSUER_ID: $BITRISE_APPSTORECONNECT_API_KEY_ISSUER_ID
-  - GCP_SERVICE_ACCOUNT_JSON_VDT_DEVICE_FETCHER: $GCP_SERVICE_ACCOUNT_JSON_VDT_DEVICE_FETCHER
+  - BLTD_APPSTORECONNECT_API_KEY_URL: $BLTD_APPSTORECONNECT_API_KEY_URL
+  - BLTD_APPSTORECONNECT_API_KEY_ID: $BLTD_APPSTORECONNECT_API_KEY_ID
+  - BLTD_APPSTORECONNECT_API_KEY_ISSUER_ID: $BLTD_APPSTORECONNECT_API_KEY_ISSUER_ID
 
 workflows:
   # `test_` prefix is used by unified CI to filter tests to run
@@ -26,19 +25,14 @@ workflows:
   # minutes on the same assertions, so on CI it is limited to the latest Xcode stack. Locally
   # (`bitrise run --config ./e2e/bitrise.yml test_flaky_and_quarantined_tests`) it always runs.
   #
-  # TEMPORARY: skipped on CI while Xcode 27 (`osx-xcode-latest-stable`) is broken for
-  # `xcode-build-for-test` — the auto-provisioned .mobileprovision is written to
-  # `~/Library/MobileDevice/Provisioning Profiles/` but Xcode 27's ProcessProductPackaging
-  # reads from `~/Library/Developer/Xcode/UserData/Provisioning Profiles/` and fails with
-  # "Build input file cannot be found". Re-add the CI gate below once `xcode-build-for-test`
-  # is fixed for Xcode 27:
-  #   run_if: |-
-  #     {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
+  # Code signing with Xcode 27 needs the explicit App IDs io.bitrise.samples.swift and
+  # io.bitrise.samples.swift.uitests.xctrunner on the Developer Portal. Without them Xcode falls
+  # back to the team's wildcard profile and the build fails with "Build input file cannot be found".
   test_flaky_and_quarantined_tests:
     steps:
     - bitrise-run:
         run_if: |-
-          {{ not .IsCI }}
+          {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
         inputs:
         - workflow_id: utility_test_flaky_and_quarantined_tests
         - bitrise_config_path: ./e2e/bitrise.yml
@@ -46,11 +40,25 @@ workflows:
   # Checks the device tables in step.yml against the live Firebase Test Lab catalog. Needs no
   # devices and no codesigning, only a service account for the catalog lookup, so it runs on
   # every stack.
+  #
+  # Signs in to GCP without a stored key: the build's Bitrise OIDC token is exchanged through
+  # the `bitrise` Workload Identity pool of steps-dev-308611 for the vdt-device-fetcher service
+  # account. The pool only trusts the unified CI app's `worker` workflow. Once gcloud has an
+  # active account, maintenance/maintenance_test.go skips its own (key based) sign-in.
   test_device_catalog_up_to_date:
-    envs:
-    # maintenance/maintenance_test.go signs in to gcloud with this.
-    - SERVICE_ACCOUNT_JSON: $GCP_SERVICE_ACCOUNT_JSON_VDT_DEVICE_FETCHER
     steps:
+    - authenticate-with-gcp@0:
+        inputs:
+        - audience: https://iam.googleapis.com/projects/1086499775844/locations/global/workloadIdentityPools/bitrise/providers/bitrise
+        - client_config: |-
+            {
+              "universe_domain": "googleapis.com",
+              "type": "external_account",
+              "audience": "//iam.googleapis.com/projects/1086499775844/locations/global/workloadIdentityPools/bitrise/providers/bitrise",
+              "subject_token_type": "urn:ietf:params:oauth:token-type:jwt",
+              "token_url": "https://sts.googleapis.com/v1/token",
+              "service_account_impersonation_url": "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/vdt-device-fetcher@steps-dev-308611.iam.gserviceaccount.com:generateAccessToken"
+            }
     - script:
         title: Compare step.yml's device tables with the live catalog
         inputs:
@@ -103,11 +111,11 @@ workflows:
         - test_plan: $TEST_PLAN
         - output_tool: xcodebuild
         - automatic_code_signing: api-key
-        - certificate_url_list: $BITRISE_APPLE_APPLE_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITRISE_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
-        - api_key_path: $BITRISE_APPSTORECONNECT_API_KEY_URL
-        - api_key_id: $BITRISE_APPSTORECONNECT_API_KEY_ID
-        - api_key_issuer_id: $BITRISE_APPSTORECONNECT_API_KEY_ISSUER_ID
+        - certificate_url_list: $BLTD_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST
+        - api_key_path: $BLTD_APPSTORECONNECT_API_KEY_URL
+        - api_key_id: $BLTD_APPSTORECONNECT_API_KEY_ID
+        - api_key_issuer_id: $BLTD_APPSTORECONNECT_API_KEY_ISSUER_ID
 
   _run:
     steps:
