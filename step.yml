@@ -92,22 +92,18 @@ inputs:
       For example:
       ```
       iphonese3,26.3,en,portrait
-      iphone8,16.6,en,landscape
+      iphone16pro,18.3,en,landscape
       ```
 
-      Available devices, OS versions and their capacity (generated on 2026-07-27):
+      Available devices, OS versions and their capacity (generated on 2026-11-24):
       ```
-      ┌─────────────┬────────────────────────┬───────────────┬─────────────────┬─────────┐
-      │   MODEL_ID  │       MODEL_NAME       │ OS_VERSION_ID │ DEVICE_CAPACITY │   TAGS  │
-      ├─────────────┼────────────────────────┼───────────────┼─────────────────┼─────────┤
-      │ ipad10      │ iPad (10th generation) │ 16.6          │ Medium          │         │
-      │ iphone11pro │ iPhone 11 Pro          │ 16.6          │ Medium          │         │
-      │ iphone14pro │ iPhone 14 Pro          │ 16.6          │ Medium          │ default │
-      │ iphone16pro │ iPhone 16 Pro          │ 18.3          │ Medium          │         │
-      │ iphone8     │ iPhone 8               │ 16.6          │ Medium          │         │
-      │ iphonese3   │ iPhone SE 3            │ 18.4          │ Medium          │         │
-      │ iphonese3   │ iPhone SE 3            │ 26.3          │ Medium          │         │
-      └─────────────┴────────────────────────┴───────────────┴─────────────────┴─────────┘
+      ┌─────────────┬───────────────┬───────────────┬─────────────────┬─────────┐
+      │   MODEL_ID  │   MODEL_NAME  │ OS_VERSION_ID │ DEVICE_CAPACITY │   TAGS  │
+      ├─────────────┼───────────────┼───────────────┼─────────────────┼─────────┤
+      │ iphone16pro │ iPhone 16 Pro │ 18.3          │ Medium          │         │
+      │ iphonese3   │ iPhone SE 3   │ 18.4          │ Medium          │ default │
+      │ iphonese3   │ iPhone SE 3   │ 26.3          │ Medium          │ default │
+      └─────────────┴───────────────┴───────────────┴─────────────────┴─────────┘
       ```
 
       For the authoritative list, see [Available devices in Test Lab](https://firebase.google.com/docs/test-lab/ios/available-testing-devices).
